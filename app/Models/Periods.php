@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
-    * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
-    * @property int $places_id BIGINT UNSIGNED NOT NULL,
-    * @property int $start_date DATE NOT NULL,
-    * @property int $end_date DATE NOT NULL,
-    * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
+ * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
+ * @property int $places_id BIGINT UNSIGNED NOT NULL,
+ * @property int $start_date DATE NOT NULL,
+ * @property int $end_date DATE NOT NULL,
+ * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
  */
 class Periods extends Model
 {
-protected $table = 'periods';
+    protected $table = 'periods';
 
     public $timestamps = false;
     protected $casts = [

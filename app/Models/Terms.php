@@ -18,6 +18,7 @@ class Terms extends Model
     protected $casts = [
         'created_at' => 'immutable_datetime',
     ];
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Bookings::class, 'terms_id');

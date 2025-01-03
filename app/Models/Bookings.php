@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
  * @property \DateTimeImmutable $update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL ON UPDATE CURRENT_TIMESTAMP(),
  */
-
 class Bookings extends Model
 {
     protected $table = 'bookings';
@@ -29,7 +28,7 @@ class Bookings extends Model
     public $timestamps = false;
     protected $casts = [
         'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime'
+        'updated_at' => 'immutable_datetime',
     ];
 
     public function period(): BelongsTo
