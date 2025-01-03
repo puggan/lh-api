@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -17,5 +18,8 @@ class Terms extends Model
     protected $casts = [
         'created_at' => 'immutable_datetime',
     ];
-
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Bookings::class, 'terms_id');
+    }
 }

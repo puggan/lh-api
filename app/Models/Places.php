@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -22,4 +23,9 @@ class Places extends Model
     protected $casts = [
         'created_at' => 'immutable_datetime',
     ];
+
+    public function periods(): HasMany
+    {
+        return $this->hasMany(Periods::class, 'places_id');
+    }
 }

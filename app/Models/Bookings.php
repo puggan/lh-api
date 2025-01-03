@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -30,4 +31,15 @@ class Bookings extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime'
     ];
+
+    public function period(): BelongsTo
+    {
+        return $this->belongsTo(Periods::class, 'periods_id');
+    }
+
+
+    public function term(): BelongsTo
+    {
+        return $this->belongsTo(Terms::class, 'terms_id');
+    }
 }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
     * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -19,4 +21,14 @@ protected $table = 'periods';
     protected $casts = [
         'created_at' => 'immutable_datetime',
     ];
+
+    public function place(): BelongsTo
+    {
+        return $this->belongsTo(Places::class, 'places_id');
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Bookings::class, 'periods_id');
+    }
 }
