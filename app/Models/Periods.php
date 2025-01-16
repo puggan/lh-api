@@ -10,8 +10,8 @@ use Illuminate\Support\Collection;
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
  * @property int $places_id BIGINT UNSIGNED NOT NULL,
- * @property int $start_date DATE NOT NULL,
- * @property int $end_date DATE NOT NULL,
+ * @property string $start_date DATE NOT NULL,
+ * @property string $end_date DATE NOT NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
  * @property-read Places $place
  * @property-read Collection<Bookings> $bookings

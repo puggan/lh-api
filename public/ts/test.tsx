@@ -1,3 +1,5 @@
+/// <reference path="./jsx.ts" />
+
 document.addEventListener('DOMContentLoaded', () => {
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="test"]');
     const scriptContent = (
