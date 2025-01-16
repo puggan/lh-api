@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $start_date DATE NOT NULL,
  * @property int $end_date DATE NOT NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
+ * @property-read Places $place
+ * @property-read Collection<Bookings> $bookings
  */
 class Periods extends Model
 {

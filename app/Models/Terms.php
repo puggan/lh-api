@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
  * @property string $content TEXT NOT NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL
+ * @property-read Collection<Bookings> $bookings
  */
 class Terms extends Model
 {

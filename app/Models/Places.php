@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * @property int $id BIGINT UNSIGNED AUTO_INCREMENT
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $zipcode INT UNSIGNED NOT NULL,
  * @property string $city VARCHAR(255) NOT NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL
+ * @property-read Collection<Periods> $periods
  */
 
 class Places extends Model
