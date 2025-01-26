@@ -1,0 +1,44 @@
+#calender {
+    width: 100%;
+}
+
+#calender th {
+    border: solid red 1px;
+}
+
+#calender td {
+    border: solid red 1px;
+    height: 2.5em;
+    vertical-align: top;
+    width: calc( 100% / 7 );
+}
+
+#calenderHeader {
+    display: flex;
+    justify-content: space-between;
+    text-transform: capitalize;
+}
+#calender td div[data-status="Pending"]{
+    background-color: yellow;
+}#calender td div[data-status="Booked"]{
+    background-color: deepskyblue;
+}#calender td div[data-status="Available"]{
+    background-color: green;
+}#calender td div[data-status="Passed"]{
+    background-color: grey;
+}
+
+#calender tbody[data-month="1"] td:not([data-month="1"]),
+#calender tbody[data-month="2"] td:not([data-month="2"]),
+#calender tbody[data-month="3"] td:not([data-month="3"]),
+#calender tbody[data-month="4"] td:not([data-month="4"]),
+#calender tbody[data-month="5"] td:not([data-month="5"]),
+#calender tbody[data-month="6"] td:not([data-month="6"]),
+#calender tbody[data-month="7"] td:not([data-month="7"]),
+#calender tbody[data-month="8"] td:not([data-month="8"]),
+#calender tbody[data-month="9"] td:not([data-month="9"]),
+#calender tbody[data-month="10"] td:not([data-month="10"]),
+#calender tbody[data-month="11"] td:not([data-month="11"]),
+#calender tbody[data-month="12"] td:not([data-month="12"]) {
+    background-color: lightgrey;
+}

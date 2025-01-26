@@ -8,15 +8,29 @@ type place = {
     street: string;
     zipcode: number;
 };
+type calender = {
+    id: number;
+    places_id: number;
+    place: string;
+    start_date: string;
+    end_date: string;
+    status: "Passed" | "Available" | "Pending" | "Booked";
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const isoDate = (date: Date) => `${date.toLocaleString("default", {year: "numeric"})}-${date.toLocaleString("default", {month: "2-digit"})}-${date.toLocaleString("default", {day: "2-digit"})}`;
+
+    const statusTranslation ={Pending: "Förfrågad", Available: "Ledig", Booked: "Bokad"};
+
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="calender"]');
-    const placeSelector =(<select>
-        <option value="">
-            Visa alla platser
-        </option>
-    </select>)
-    const tableBody =(
+    const placeSelector = (
+        <select id="places">
+            <option value="">
+                Visa alla platser
+            </option>
+        </select>
+    );
+    const tableBody = (
         <tbody>
             <tr>
                 <td>
@@ -25,9 +39,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             </tr>
         </tbody>
     );
+
+    const buttonToday = (
+        <button>
+            Idag
+        </button>
+    );
+    const buttonPrevious = (
+        <button>
+            ⮘
+        </button>
+    );
+    const buttonNext = (
+        <button>
+            ⮚
+        </button>
+    );
+buttonNext.addEventListener('click', () => {
+    currentDate.setDate(37);
+    renderMonth()
+});
+buttonPrevious.addEventListener('click', () => {
+    currentDate.setDate(-0);
+    renderMonth()
+});
+buttonToday.addEventListener('click', () => {
+    currentDate = new Date();
+    renderMonth()
+});
+const monthTitle = (
+    <span>
+        Loading
+    </span>
+    );
     const scriptContent = (
         <div>
+            <div id="calenderHeader">
+            <span>
+                {buttonPrevious}
+                {buttonToday}
+                {buttonNext}
+            </span>
+                {monthTitle}
             {placeSelector}
+            </div>
             <table id="calender">
                 <thead>
                     <tr>
@@ -59,13 +114,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
     );
     let currentDate = new Date();
-    const renderMonth = ()=>{
-        while(tableBody.lastElementChild){
+    const renderMonth = () => {
+        while (tableBody.lastElementChild) {
             tableBody.removeChild(tableBody.lastElementChild)
         }
         // start på måndagen i den veckan där första dagen på månaden är
         const firstDayOfMonth = new Date(currentDate);
         firstDayOfMonth.setDate(1);
+        monthTitle.innerText = currentDate.toLocaleDateString("SV", {month:"long", year:"numeric"});
+        tableBody.setAttribute("data-month", (currentDate.getMonth() + 1) + '');
         const startDate = new Date(firstDayOfMonth);
         switch (firstDayOfMonth.getDay()) {
             case 0: // Sunday
@@ -77,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 2: // Tuesday
                 startDate.setDate(0)
                 break;
-            case 3: // Wendsday
+            case 3: // Wednesday
                 startDate.setDate(-1)
                 break;
             case 4: // Thursday
@@ -93,21 +150,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         let cellDate = new Date(startDate);
-        for(let weekNr = 0; weekNr < 5; weekNr++) {
-            const weektr= <tr></tr>
-            for(let dayNr = 0; dayNr < 7; dayNr++) {
-                weektr.appendChild(<td>{cellDate.getDate()}</td>);
+        for (let weekNr = 0; weekNr < 5; weekNr++) {
+            const weektr = <tr></tr>
+            for (let dayNr = 0; dayNr < 7; dayNr++) {
+                let eventBox = null;
+                const cellDateIso = isoDate(cellDate);
+                for (const event of periods) {
+                    if (event.status == "Passed") {
+                        continue;
+                    }
+                    if (event.start_date > cellDateIso) {
+                        continue;
+                    }
+                    if (event.end_date < cellDateIso) {
+                        continue;
+                    }
+                    eventBox = <div data-status={event.status}>{statusTranslation[event.status]}</div>
+                }
+                weektr.appendChild(
+                    <td data-month={cellDate.getMonth()+1}>
+                        <span>{cellDate.getDate()}</span>
+                        {eventBox}
+                    </td>
+                );
                 cellDate.setHours(37)
             }
             tableBody.appendChild(weektr);
         }
     };
-    const styleElement = <style></style>;
-    styleElement.innerText = `
-        #calender {width: 100%}
-        #calender th {border: solid red 1px;}
-        #calender td {border: solid red 1px;}
-    `;
+    const styleElement = <link rel="stylesheet" href="/less/calender.css"></link>;
     document.head.appendChild(styleElement);
 
     if (tsxScriptElement) {
@@ -119,13 +190,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(scriptContent);
     }
     const places = await (await fetch("/api/places")).json() as place[];
-    console.log(places);
-    for(const place of places){
+    for (const place of places) {
         placeSelector.appendChild(
             <option value={place.id}>
                 {place.name}
             </option>
         )
     }
+    // renderMonth();
+    const periods = await (await fetch("/api/calender")).json() as calender[];
     renderMonth();
 }, {once: true, passive: true});
