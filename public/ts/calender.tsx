@@ -20,7 +20,7 @@ type calender = {
 document.addEventListener('DOMContentLoaded', async () => {
     const isoDate = (date: Date) => `${date.toLocaleString("default", {year: "numeric"})}-${date.toLocaleString("default", {month: "2-digit"})}-${date.toLocaleString("default", {day: "2-digit"})}`;
 
-    const statusTranslation ={Pending: "Förfrågad", Available: "Ledig", Booked: "Bokad"};
+    const statusTranslation = {Pending: "Förfrågad", Available: "Ledig", Booked: "Bokad"};
 
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="calender"]');
     const placeSelector = (
@@ -55,20 +55,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             ⮚
         </button>
     );
-buttonNext.addEventListener('click', () => {
-    currentDate.setDate(37);
-    renderMonth()
-});
-buttonPrevious.addEventListener('click', () => {
-    currentDate.setDate(-0);
-    renderMonth()
-});
-buttonToday.addEventListener('click', () => {
-    currentDate = new Date();
-    renderMonth()
-});
-const monthTitle = (
-    <span>
+    buttonNext.addEventListener('click', () => {
+        currentDate.setDate(37);
+        renderMonth()
+    });
+    buttonPrevious.addEventListener('click', () => {
+        currentDate.setDate(-0);
+        renderMonth()
+    });
+    buttonToday.addEventListener('click', () => {
+        currentDate = new Date();
+        renderMonth()
+    });
+    const monthTitle = (
+        <span>
         Loading
     </span>
     );
@@ -81,7 +81,7 @@ const monthTitle = (
                 {buttonNext}
             </span>
                 {monthTitle}
-            {placeSelector}
+                {placeSelector}
             </div>
             <table id="calender">
                 <thead>
@@ -121,7 +121,7 @@ const monthTitle = (
         // start på måndagen i den veckan där första dagen på månaden är
         const firstDayOfMonth = new Date(currentDate);
         firstDayOfMonth.setDate(1);
-        monthTitle.innerText = currentDate.toLocaleDateString("SV", {month:"long", year:"numeric"});
+        monthTitle.innerText = currentDate.toLocaleDateString("SV", {month: "long", year: "numeric"});
         tableBody.setAttribute("data-month", (currentDate.getMonth() + 1) + '');
         const startDate = new Date(firstDayOfMonth);
         switch (firstDayOfMonth.getDay()) {
@@ -165,10 +165,63 @@ const monthTitle = (
                     if (event.end_date < cellDateIso) {
                         continue;
                     }
-                    eventBox = <div data-status={event.status}>{statusTranslation[event.status]}</div>
+                    eventBox = <div data-status={event.status}>{statusTranslation[event.status]}</div>;
+                    if (event.status == "Available") {
+                        eventBox.addEventListener("click", () => {
+                            const bookingForm = <form id="bookingForm">
+                                <h3>Boka {event.start_date} till {event.end_date}</h3>
+                                <input type="hidden" name="periodId" value={event.id}/>
+                                <div>
+                                    <fieldset>
+                                        <label>
+                                            <span>För- och efternamn:</span>
+                                            <input type="text" name="name"/>
+                                        </label>
+
+                                        <label>
+                                            <span>Telefonnummer:</span>
+                                            <input type="text" name="phone"/>
+                                        </label>
+                                        <label>
+                                            <span>Email:</span>
+                                            <input type="text" name="email"/>
+                                        </label>
+                                        <label>
+                                            <span>Adress:</span>
+                                            <input type="text" name="street"/>
+                                        </label>
+                                        <label>
+                                            <span>Lägenhetsnummer:</span>
+                                            <input type="text" name="apartment"/>
+                                        </label>
+                                        <label>
+                                            <span>Postnummer:</span>
+                                            <input type="text" name="zipcode"/>
+                                        </label>
+                                        <label>
+                                            <span>Stad:</span>
+                                            <input type="text" name="city"/>
+                                        </label>
+
+                                        <label>
+                                        <span>Vad ska lokalen användas till:</span>
+                                            <textarea name="street"></textarea>
+                                        </label>
+                                    </fieldset>
+                                    <fieldset>
+                                        <div>bla bla bla</div>
+                                        <input type="checkbox" name="Approve" value="1" />
+                                        <button> Skicka bokningsförfrågan </button>
+                                    </fieldset>
+                                </div>
+                            </form>
+                            scriptContent.appendChild(bookingForm);
+                            bookingForm.scrollTo();
+                        });
+                    }
                 }
                 weektr.appendChild(
-                    <td data-month={cellDate.getMonth()+1}>
+                    <td data-month={cellDate.getMonth() + 1}>
                         <span>{cellDate.getDate()}</span>
                         {eventBox}
                     </td>

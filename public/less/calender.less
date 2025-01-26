@@ -10,7 +10,7 @@
     border: solid red 1px;
     height: 2.5em;
     vertical-align: top;
-    width: calc( 100% / 7 );
+    width: calc(100% / 7);
 }
 
 #calenderHeader {
@@ -18,15 +18,48 @@
     justify-content: space-between;
     text-transform: capitalize;
 }
-#calender td div[data-status="Pending"]{
+
+#calender td div[data-status="Pending"] {
     background-color: yellow;
-}#calender td div[data-status="Booked"]{
+}
+
+#calender td div[data-status="Booked"] {
     background-color: deepskyblue;
-}#calender td div[data-status="Available"]{
+}
+
+#calender td div[data-status="Available"] {
     background-color: green;
-}#calender td div[data-status="Passed"]{
+}
+
+#calender td div[data-status="Passed"] {
     background-color: grey;
 }
+
+#bookingForm > div {
+    display: flex;
+}
+
+#bookingForm label {
+    display: block;
+}
+
+#bookingForm label > span {
+    display: block;
+}
+
+#bookingForm label input {
+    width: 300px;
+}
+
+#bookingForm label textarea {
+    height: 5em;
+    width: 300px;
+}
+#bookingForm fieldset {
+    width: fit-content;
+}
+
+
 
 #calender tbody[data-month="1"] td:not([data-month="1"]),
 #calender tbody[data-month="2"] td:not([data-month="2"]),
