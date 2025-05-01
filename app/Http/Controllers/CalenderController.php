@@ -55,6 +55,36 @@ class CalenderController
         $booking->description = $request->input('purpose');
         $booking->terms_id = $request->input('terms_id');
         $booking->save();
+        $booking->load('period');
+
+        $bookingDataAsText = json_encode($booking, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_SLASHES);
+
+        mail(
+            'info@hgf-tuve.se',
+            'bokningsförfrågan',
+            <<<TEXT_BLOCK
+                Det har kommit in en boknings förfrågan.
+                Var vänlig svara inom kort från:
+
+                https://hgf-tuve.se/bokningskalender-for-lokalen/request
+
+                Bokningen: {$bookingDataAsText}
+                TEXT_BLOCK,
+            "Reply-To: {$booking->email}",
+        );
+
+        mail(
+            $booking->email,
+            'bokningsförfrågan mottagen',
+            <<<TEXT_BLOCK
+                Vi har tagit i mot din boknings förfrågan,
+                och kommer svara inom kort.
+
+                Bokningen: {$bookingDataAsText}
+                TEXT_BLOCK,
+            'Reply-To: "LH Höjden"<info@hgf-tuve.se>',
+        );
+
         return new JsonResponse($booking);
     }
 }
