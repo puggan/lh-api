@@ -1,5 +1,9 @@
 /// <reference path="./jsx.ts" />
-
+type terms = {
+    id: number;
+    content: string;
+    created_at: string;
+};
 type place = {
     city: string;
     description: string;
@@ -260,8 +264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         </label>
                                     </fieldset>
                                     <fieldset>
-                                        <div>bla bla bla</div>
-                                        <input type="checkbox" name="terms_id" value="1" />
+                                        <div style="white-space: pre-line;">
+                                            {terms.content}
+                                        </div>
+                                        <input type="checkbox" name="terms_id" value={terms.id} />
                                         <button id="booking_button">Skicka bokningsförfrågan</button>
                                     </fieldset>
                                 </div>
@@ -293,6 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         document.body.appendChild(scriptContent);
     }
+    const terms = await (await fetch("/api/terms/last")).json() as terms;
     const places = await (await fetch("/api/places")).json() as place[];
     for (const place of places) {
         placeSelector.appendChild(
