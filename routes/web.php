@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalenderController;
 use App\Http\Controllers\PlacesController;
+use App\Http\Controllers\TermsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,6 @@ Route::get('/places', PlacesController::places(...));
 Route::get('/calender', CalenderController::calender(...));
 
 Route::post('/calender/book', CalenderController::book(...));
+
+Route::get('/terms', TermsController::terms(...));
+Route::get('/terms/last', TermsController::last(...));
