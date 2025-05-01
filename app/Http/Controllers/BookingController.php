@@ -54,4 +54,10 @@ class BookingController
 
         return new JsonResponse($booking);
     }
+
+    public static function pending(): JsonResponse
+    {
+        $pending = Bookings::query()->with('period')->where('status', '=', 'pending')->get();
+        return new JsonResponse($pending);
+    }
 }

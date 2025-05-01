@@ -21,3 +21,5 @@ Route::post('/calender/book', BookingController::book(...));
 
 Route::get('/terms', TermsController::terms(...));
 Route::get('/terms/last', TermsController::last(...));
+
+Route::get('/request/pending', BookingController::pending(...));
