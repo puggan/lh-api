@@ -113,6 +113,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             </table>
         </div>
     );
+
+    const saveInputValue = (event: Event) => {
+        const input = event.currentTarget as HTMLInputElement;
+        localStorage.setItem(
+            'calenderBooking' + input.name,
+            input.value
+        )
+    };
     let currentDate = new Date();
     let bookingForm: HTMLFormElement|null = null;
     const renderMonth = () => {
@@ -173,6 +181,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 scriptContent.removeChild(bookingForm);
                             }
 
+                            const inputField = (name: string) => <input
+                                type="text"
+                                name={name}
+                                oninput={saveInputValue}
+                                value={localStorage.getItem('calenderBooking' + name)}
+                            />;
+
                             bookingForm = <form id="bookingForm">
                                 <h3>Boka {event.start_date} till {event.end_date}</h3>
                                 <input type="hidden" name="periodId" value={event.id}/>
@@ -180,37 +195,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <fieldset>
                                         <label>
                                             <span>För- och efternamn:</span>
-                                            <input type="text" name="name"/>
+                                            {inputField('name')}
                                         </label>
 
                                         <label>
                                             <span>Telefonnummer:</span>
-                                            <input type="text" name="phone"/>
+                                            {inputField('phone')}
                                         </label>
                                         <label>
                                             <span>Email:</span>
-                                            <input type="text" name="email"/>
+                                            {inputField('email')}
                                         </label>
                                         <label>
                                             <span>Adress:</span>
-                                            <input type="text" name="street"/>
+                                            {inputField('street')}
                                         </label>
                                         <label>
                                             <span>Lägenhetsnummer:</span>
-                                            <input type="text" name="apartment"/>
+                                            {inputField('apartment')}
                                         </label>
                                         <label>
                                             <span>Postnummer:</span>
-                                            <input type="text" name="zipcode"/>
+                                            {inputField('zipcode')}
                                         </label>
                                         <label>
                                             <span>Stad:</span>
-                                            <input type="text" name="city"/>
+                                            {inputField('city')}
                                         </label>
 
                                         <label>
-                                        <span>Vad ska lokalen användas till:</span>
-                                            <textarea name="street"></textarea>
+                                            <span>Vad ska lokalen användas till:</span>
+                                            <textarea
+                                                name="purpose"
+                                                oninput={saveInputValue}
+                                            >
+                                                {localStorage.getItem('calenderBooking' + 'purpose')}
+                                            </textarea>
                                         </label>
                                     </fieldset>
                                     <fieldset>
