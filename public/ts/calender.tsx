@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
     );
     let currentDate = new Date();
+    let bookingForm: HTMLFormElement|null = null;
     const renderMonth = () => {
         while (tableBody.lastElementChild) {
             tableBody.removeChild(tableBody.lastElementChild)
@@ -168,7 +169,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     eventBox = <div data-status={event.status}>{statusTranslation[event.status]}</div>;
                     if (event.status == "Available") {
                         eventBox.addEventListener("click", () => {
-                            const bookingForm = <form id="bookingForm">
+                            if (bookingForm) {
+                                scriptContent.removeChild(bookingForm);
+                            }
+
+                            bookingForm = <form id="bookingForm">
                                 <h3>Boka {event.start_date} till {event.end_date}</h3>
                                 <input type="hidden" name="periodId" value={event.id}/>
                                 <div>
