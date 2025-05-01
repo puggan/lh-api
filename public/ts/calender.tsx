@@ -181,6 +181,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 scriptContent.removeChild(bookingForm);
                             }
 
+                            const bookCalenderEvent = async (event: Event) => {
+                                event.preventDefault();
+                                const inputData = new FormData(bookingForm);
+                                console.log(inputData);
+                                await (await fetch(
+                                    "/api/calender/book",
+                                    {
+                                        body: inputData,
+                                        method: 'POST',
+                                    }
+                                )).json();
+                            };
+
                             const inputField = (name: string) => <input
                                 type="text"
                                 name={name}
@@ -188,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 value={localStorage.getItem('calenderBooking' + name)}
                             />;
 
-                            bookingForm = <form id="bookingForm">
+                            bookingForm = <form id="bookingForm" onsubmit={bookCalenderEvent}>
                                 <h3>Boka {event.start_date} till {event.end_date}</h3>
                                 <input type="hidden" name="periodId" value={event.id}/>
                                 <div>
@@ -236,10 +249,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <fieldset>
                                         <div>bla bla bla</div>
                                         <input type="checkbox" name="Approve" value="1" />
-                                        <button> Skicka bokningsförfrågan </button>
+                                        <button>Skicka bokningsförfrågan</button>
                                     </fieldset>
                                 </div>
-                            </form>
+                            </form> as HTMLFormElement;
                             scriptContent.appendChild(bookingForm);
                             bookingForm.scrollTo();
                         });
