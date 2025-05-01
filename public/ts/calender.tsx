@@ -57,15 +57,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     buttonNext.addEventListener('click', () => {
         currentDate.setDate(37);
-        renderMonth()
+        renderMonth();
     });
     buttonPrevious.addEventListener('click', () => {
         currentDate.setDate(-0);
-        renderMonth()
+        renderMonth();
     });
     buttonToday.addEventListener('click', () => {
         currentDate = new Date();
-        renderMonth()
+        renderMonth();
     });
     const monthTitle = (
         <span>
@@ -183,15 +183,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             const bookCalenderEvent = async (event: Event) => {
                                 event.preventDefault();
+                                const booking_button = document.getElementById('booking_button') as HTMLButtonElement;
+                                booking_button.disabled = true;
                                 const inputData = new FormData(bookingForm);
                                 console.log(inputData);
-                                await (await fetch(
-                                    "/api/calender/book",
-                                    {
-                                        body: inputData,
-                                        method: 'POST',
-                                    }
-                                )).json();
+                                try {
+                                    await (await fetch(
+                                        "/api/calender/book",
+                                        {
+                                            body: inputData,
+                                            method: 'POST',
+                                        }
+                                    )).json();
+                                } catch {
+                                    alert('Någonting gick fel, försök igen.');
+                                    booking_button.disabled = false;
+                                    return;
+                                }
+
+                                alert('Tack för din bokningsförfrågan, vi återkommer inom kort.');
+                                scriptContent.removeChild(bookingForm);
+                                bookingForm = null;
+                                return reloadPeriods();
                             };
 
                             const inputField = (name: string) => <input
@@ -203,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                             bookingForm = <form id="bookingForm" onsubmit={bookCalenderEvent}>
                                 <h3>Boka {event.start_date} till {event.end_date}</h3>
-                                <input type="hidden" name="periodId" value={event.id}/>
+                                <input type="hidden" name="periods_id" value={event.id}/>
                                 <div>
                                     <fieldset>
                                         <label>
@@ -248,8 +261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     </fieldset>
                                     <fieldset>
                                         <div>bla bla bla</div>
-                                        <input type="checkbox" name="Approve" value="1" />
-                                        <button>Skicka bokningsförfrågan</button>
+                                        <input type="checkbox" name="terms_id" value="1" />
+                                        <button id="booking_button">Skicka bokningsförfrågan</button>
                                     </fieldset>
                                 </div>
                             </form> as HTMLFormElement;
@@ -288,7 +301,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             </option>
         )
     }
-    // renderMonth();
-    const periods = await (await fetch("/api/calender")).json() as calender[];
-    renderMonth();
+    let periods = [];
+    const reloadPeriods = async () => {
+        periods = await (await fetch("/api/calender")).json() as calender[];
+        renderMonth();
+    };
+    reloadPeriods();
 }, {once: true, passive: true});
