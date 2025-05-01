@@ -14,3 +14,5 @@ Route::get('/who-am-i', UserController::whoAmI(...));
 Route::get('/places', PlacesController::places(...));
 
 Route::get('/calender', CalenderController::calender(...));
+
+Route::post('/calender/book', CalenderController::book(...));

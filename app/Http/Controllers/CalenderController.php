@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bookings;
 use App\Models\Periods;
 use App\Models\Places;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class CalenderController
@@ -37,5 +39,22 @@ class CalenderController
             ];
         }
         return new JsonResponse($events);
+    }
+
+    public static function book(Request $request): JsonResponse
+    {
+        $booking = new Bookings();
+        $booking->periods_id = $request->input('periods_id');
+        $booking->name = $request->input('name');
+        $booking->phone = $request->input('phone');
+        $booking->email = $request->input('email');
+        $booking->street = $request->input('street');
+        $booking->apartment = $request->input('apartment');
+        $booking->zipcode = $request->input('zipcode');
+        $booking->city = $request->input('city');
+        $booking->description = $request->input('purpose');
+        $booking->terms_id = $request->input('terms_id');
+        $booking->save();
+        return new JsonResponse($booking);
     }
 }
