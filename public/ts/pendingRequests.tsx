@@ -7,7 +7,7 @@ type requests = {
     status: string;
     description: string;
     name: string;
-    phone: number;;
+    phone: number;
     email: string;
     street: string;
     apartment: number;
@@ -38,13 +38,86 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const statusTranslation = {Pending: "Förfrågad", Available: "Ledig", Booked: "Bokad"};
 
+    const styleElement = <link rel="stylesheet" href="/less/pendingRequests.css"></link>;
+    document.head.appendChild(styleElement);
+
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="pendingRequests"]');
 
     const requests = await (await fetch("/api/request/pending")).json() as requests[];
 
     console.table(requests);
 
-    const scriptContent = <div></div>;
+    const scriptContent = <div id="pendingRequest">
+        <h1>
+            Bokningsförfrågningar
+        </h1>
+    </div>;
+
+    for (const request of requests) {
+        scriptContent.appendChild(
+            <table>
+                <tr>
+                    <th>
+                        Datum:
+                    </th>
+                    <td>
+                        {request.period.start_date}
+                        -
+                        {request.period.end_date}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Beskrivning:
+                    </th>
+                    <td>
+                        {request.description}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Vem:
+                    </th>
+                    <td>
+                        {request.name}<br/>
+                        {request.street}<br/>
+                        {request.apartment}<br/>
+                        {request.zipcode}<br/>
+                        {request.city}<br/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Kontaktuppgifter:
+                    </th>
+                    <td>
+                        {request.phone}<br/>
+                        {request.email}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Inskickad:
+                    </th>
+                    <td>
+                        {request.created_at.substr(0, 16).replace('T', ' ')}
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                    </th>
+                    <td>
+                        <button>
+                            Acceptera
+                        </button>
+                        <button>
+                            Neka
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        )
+    }
 
     if (tsxScriptElement) {
         tsxScriptElement.parentElement.insertBefore(

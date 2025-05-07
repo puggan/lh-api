@@ -1,0 +1,58 @@
+#pendingRequest {
+    display:flex;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    h1 {
+        width: 100%;
+    }
+}
+
+table {
+    border: solid red 1px;
+    border-collapse: collapse;
+
+    button {
+        margin-bottom: 10px;
+        margin-right: 10px;
+        margin-top: 10px;
+        padding: 5px 10px;
+
+        &:first-child {
+            border: solid green 3px;
+            background-color: lightgreen;
+            color: darkgreen;
+            font-weight: bold;
+
+            &:hover {
+                border: solid black 3px;
+                color: black;
+            }
+        }
+        &:nth-child(2) {
+            border: solid red 3px;
+            background-color: pink;
+            color: red;
+            font-weight: bold;
+
+            &:hover {
+                border: solid black 3px;
+                color: black;
+            }
+        }
+    }
+
+    td {
+        padding-right: 20px;
+    }
+
+    th {
+        padding: 5px 20px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    tr {
+        border-bottom: dashed grey 1px;
+    }
+}
