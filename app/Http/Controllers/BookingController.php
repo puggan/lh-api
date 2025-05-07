@@ -60,4 +60,16 @@ class BookingController
         $pending = Bookings::query()->with('period')->where('status', '=', 'pending')->get();
         return new JsonResponse($pending);
     }
+    public static function declined(Request $request): JsonResponse
+    {
+        $bookningsId= $request->input('bookings_id');
+
+        //todo: hämta och kolla om booknings finns
+
+        Bookings::query()->where('id', '=', $bookningsId)->update(['status' => 'rejected']);
+
+        //todo:maila
+
+        return new JsonResponse(['ok' => true]);
+    }
 }
