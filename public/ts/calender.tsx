@@ -12,6 +12,14 @@ type place = {
     street: string;
     zipcode: number;
 };
+type loggedInUser ={
+    loggedIn: true;
+    who: string;
+};
+type loggedOutUser ={
+    loggedIn: false;
+};
+type user = loggedInUser | loggedOutUser;
 type calender = {
     id: number;
     places_id: number;
@@ -76,6 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         Loading
     </span>
     );
+    const userBox = (
+        <span id="userBox"></span>
+    )
     const scriptContent = (
         <div>
             <div id="calenderHeader">
@@ -83,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 {buttonPrevious}
                 {buttonToday}
                 {buttonNext}
+                {userBox}
             </span>
                 {monthTitle}
                 {placeSelector}
@@ -301,6 +313,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const terms = await (await fetch("/api/terms/last")).json() as terms;
     const places = await (await fetch("/api/places")).json() as place[];
+    const user = await (await fetch(" /api/who-am-i")).json() as user;
+    if (user.loggedIn) {
+       userBox.innerText = user.who;
+    }
     for (const place of places) {
         placeSelector.appendChild(
             <option value={place.id}>
