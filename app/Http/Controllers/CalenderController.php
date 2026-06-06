@@ -24,9 +24,9 @@ class CalenderController
                 } else {
                     $status = "Available";
                 }
-            }elseif ($period->bookings->where('status', '=', 'booked')->isEmpty()) {
+            } elseif ($period->bookings->where('status', '=', 'booked')->isEmpty()) {
                 $status = "Pending";
-            }else {
+            } else {
                 $status = "Booked";
             }
             $events[] = [
