@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Bookings;
 use App\Models\Periods;
-use App\Models\Places;
+use App\Models\WpUser;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class CalenderController
 {
     public static function calender(): JsonResponse
     {
+        $user = WpUser::loggedIn();
         $events = [];
         $query = Periods::query();
         $query->with(["place", "bookings"]);
@@ -36,6 +34,7 @@ class CalenderController
                 "start_date" => $period->start_date,
                 "end_date" => $period->end_date,
                 "status" => $status,
+                "bookings" => $user ? $period->bookings : null
             ];
         }
         return new JsonResponse($events);

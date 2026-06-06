@@ -20,13 +20,31 @@ type loggedOutUser ={
     loggedIn: false;
 };
 type user = loggedInUser | loggedOutUser;
+type status = "Passed" | "Available" | "Pending" | "Booked";
+type booking = {
+    id: number;
+    terms_id: number;
+    periods_id: number;
+    status: status;
+    description: string;
+    name: string;
+    phone: number;
+    email: string;
+    street: string;
+    apartment: number;
+    zipcode: number;
+    city: string;
+    created_at: string;
+    update_at: string;
+};
 type calender = {
     id: number;
     places_id: number;
     place: string;
     start_date: string;
     end_date: string;
-    status: "Passed" | "Available" | "Pending" | "Booked";
+    status: status;
+    bookings: booking[] | null;
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -288,6 +306,75 @@ document.addEventListener('DOMContentLoaded', async () => {
                             bookingForm.scrollTo();
                         });
                     }
+                    if (event.status == "Pending" && user.loggedIn) {
+                        eventBox.addEventListener("click", () => {
+                            if (bookingForm) {
+                                scriptContent.removeChild(bookingForm);
+                            }
+                            const inputField = (name: string) => <input
+                                type="text"
+                                name={name}
+                                readonly
+                                value={event.bookings[0][name]}
+                            />;
+                            bookingForm = <form id="bookingForm">
+                                <h3>Boka {event.start_date} till {event.end_date}</h3>
+                                <input type="hidden" name="periods_id" value={event.id}/>
+                                <div>
+                                    <fieldset>
+                                        <label>
+                                            <span>För- och efternamn:</span>
+                                            {inputField('name')}
+                                        </label>
+
+                                        <label>
+                                            <span>Telefonnummer:</span>
+                                            {inputField('phone')}
+                                        </label>
+                                        <label>
+                                            <span>Email:</span>
+                                            {inputField('email')}
+                                        </label>
+                                        <label>
+                                            <span>Adress:</span>
+                                            {inputField('street')}
+                                        </label>
+                                        <label>
+                                            <span>Lägenhetsnummer:</span>
+                                            {inputField('apartment')}
+                                        </label>
+                                        <label>
+                                            <span>Postnummer:</span>
+                                            {inputField('zipcode')}
+                                        </label>
+                                        <label>
+                                            <span>Stad:</span>
+                                            {inputField('city')}
+                                        </label>
+
+                                        <label>
+                                            <span>Vad ska lokalen användas till:</span>
+                                            <textarea
+                                                name="purpose"
+                                                readonly
+                                            >
+                                                {event.bookings[0].description}
+                                            </textarea>
+                                        </label>
+                                    </fieldset>
+                                    <fieldset>
+                                        <div style="white-space: pre-line;">
+                                            {terms.content}
+                                        </div>
+                                        <input type="checkbox" name="terms_id" value={terms.id} />
+                                        <button id="booking_button">Skicka bokningsförfrågan</button>
+                                    </fieldset>
+                                </div>
+                            </form> as HTMLFormElement;
+                            scriptContent.appendChild(bookingForm);
+                            bookingForm.scrollTo();
+                        });
+                    }
                 }
                 weektr.appendChild(
                     <td data-month={cellDate.getMonth() + 1}>
@@ -324,7 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </option>
         )
     }
-    let periods = [];
+    let periods: calender[] = [];
     const reloadPeriods = async () => {
         periods = await (await fetch("/api/calender")).json() as calender[];
         renderMonth();
