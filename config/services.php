@@ -28,6 +28,13 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    // Constants in the shared wp-config.php (see App\Services\Communication).
+    'smsapi' => [
+        'token' => defined('SMSAPI_TOKEN') ? SMSAPI_TOKEN : null,
+        'from' => defined('SMSAPI_FROM') ? SMSAPI_FROM : null,
+        'test' => defined('SMSAPI_TEST') && SMSAPI_TEST,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

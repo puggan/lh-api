@@ -11,7 +11,7 @@ use Tests\TestCase;
  * POST /api/calender/book, the booking request from the public calendar.
  *
  * Runs against the configured database inside a transaction that is rolled back after each test.
- * No mail is sent while testing; Communication::$sent collects the messages.
+ * Nothing is sent while testing; Communication::$sent collects the messages.
  */
 class BookTest extends TestCase
 {
@@ -26,7 +26,7 @@ class BookTest extends TestCase
         parent::setUp();
         Communication::$sent = [];
 
-        $this->place = DB::table('places')->insertGetId(['name' => 'Lokalen', 'description' => '', 'street' => 'Gata 1', 'zipcode' => 12345, 'city' => 'Test']);
+        $this->place = DB::table('places')->insertGetId(['name' => 'Lokalen', 'description' => '', 'street' => 'Gata 1', 'zipcode' => 12345, 'city' => 'Test', 'admin_phone' => 793377895]);
         $this->terms = DB::table('terms')->insertGetId(['content' => 'test terms']);
         $this->period = $this->period(now()->addDays(10)->toDateString());
     }
@@ -42,11 +42,11 @@ class BookTest extends TestCase
 
         $this->assertCount(2, Communication::$sent);
         [$admin, $user] = Communication::$sent;
-        $this->assertSame(Communication::ADMIN_EMAIL, $admin['to']);
-        $this->assertSame('test@example.com', $admin['replyTo']);
-        $this->assertStringContainsString('Telefon: 0701234567', $admin['message']);
-        $this->assertSame('test@example.com', $user['to']);
-        $this->assertStringContainsString('Lokal: Lokalen', $user['message']);
+        $this->assertSame('46793377895', $admin['to']);
+        $this->assertStringContainsString('Ny bokningsförfrågan för Lokalen', $admin['message']);
+        $this->assertStringContainsString('Test Person, lgh 466', $admin['message']);
+        $this->assertSame('46701234567', $user['to']);
+        $this->assertStringContainsString('Vi har tagit emot din bokningsförfrågan för Lokalen', $user['message']);
     }
 
     public function test_missing_and_wrong_fields_are_422_with_swedish_messages(): void

@@ -91,37 +91,15 @@ class BookingController
         $booking->save();
         $booking->load('period.place');
 
-        $summary = <<<TEXT_BLOCK
-            Lokal: {$booking->period->place->name}
-            Period: {$booking->period->start_date} – {$booking->period->end_date}
-            Namn: {$booking->name}
-            Telefon: 0{$booking->phone}
-            E-post: {$booking->email}
-            Adress: {$booking->street}, lgh {$booking->apartment}, {$booking->zipcode} {$booking->city}
-            Syfte: {$booking->description}
-            TEXT_BLOCK;
-
+        $place = $booking->period->place;
         Communication::informAdmin(
-            'bokningsförfrågan',
-            <<<TEXT_BLOCK
-                Det har kommit in en bokningsförfrågan.
-                Var vänlig svara inom kort från:
-
-                https://hgf-tuve.se/bokningskalender-for-lokalen/request
-
-                {$summary}
-                TEXT_BLOCK,
-            $booking,
+            $place,
+            "Ny bokningsförfrågan för {$place->name} {$booking->period->start_date} från {$booking->name}, lgh {$booking->apartment}."
+            . ' Svara här: https://hgf-tuve.se/wp/wp-admin/admin.php?page=lh-bookings',
         );
         Communication::informUser(
             $booking,
-            'bokningsförfrågan mottagen',
-            <<<TEXT_BLOCK
-                Vi har tagit emot din bokningsförfrågan
-                och kommer att svara inom kort.
-
-                {$summary}
-                TEXT_BLOCK,
+            "Vi har tagit emot din bokningsförfrågan för {$place->name} {$booking->period->start_date} och svarar inom kort. /LH Höjden",
         );
 
         return new JsonResponse($booking);
@@ -197,7 +175,7 @@ class BookingController
         if ($booking->deposit > 0) {
             $message .= " Depositionen är {$booking->deposit} kr.";
         }
-        Communication::informUser($booking, 'bokning godkänd', $message);
+        Communication::informUser($booking, $message);
 
         return new JsonResponse(['ok' => true]);
     }
@@ -212,7 +190,6 @@ class BookingController
 
         Communication::informUser(
             $booking,
-            'bokningsförfrågan avböjd',
             "Tyvärr kan vi inte ta emot din bokning av {$booking->period->place->name} {$booking->period->start_date}.",
         );
 
