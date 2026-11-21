@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Inskickad:
                     </th>
                     <td>
-                        {request.created_at.substr(0, 16).replace('T', ' ')}
+                        {new Date(request.created_at).toLocaleString('sv-SE', {dateStyle: 'short', timeStyle: 'short'})}
                     </td>
                 </tr>
                 <tr>
