@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
@@ -30,6 +31,8 @@ use Illuminate\Support\Collection;
  */
 class Bookings extends Model
 {
+    use LogsChanges;
+
     protected $table = 'bookings';
 
     public $timestamps = false;

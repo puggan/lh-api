@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,7 @@ use Illuminate\Support\Collection;
  */
 class Periods extends Model
 {
+    use LogsChanges;
     use SoftDeletes;
 
     protected $table = 'periods';

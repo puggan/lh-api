@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsChanges;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -20,6 +21,8 @@ use Illuminate\Support\Collection;
 
 class Places extends Model
 {
+    use LogsChanges;
+
     protected $table = 'places';
 
     public $timestamps = false;
