@@ -49,6 +49,37 @@ class BookTest extends TestCase
         $this->assertStringContainsString('Vi har tagit emot din bokningsförfrågan för Lokalen', $user['message']);
     }
 
+    public function test_no_sms_while_a_recent_request_for_the_same_place_is_pending(): void
+    {
+        $first = $this->post('/api/calender/book', $this->form())->assertOk()->json('id');
+        $this->assertCount(2, Communication::$sent);
+
+        // Same place, first request still pending: saved, but no SMS.
+        $second = $this->post('/api/calender/book', $this->form(['name' => 'Second']))->assertOk()->json('id');
+        $this->assertDatabaseHas('bookings', ['id' => $second, 'status' => 'pending']);
+        $this->assertCount(2, Communication::$sent);
+
+        // Another place is not affected.
+        $otherPlace = DB::table('places')->insertGetId(['name' => 'Annan', 'description' => '', 'street' => 'Gata 2', 'zipcode' => 12345, 'city' => 'Test', 'admin_phone' => 701111111]);
+        $otherPeriod = DB::table('periods')->insertGetId(['places_id' => $otherPlace, 'start_date' => now()->addDays(10)->toDateString(), 'end_date' => now()->addDays(10)->toDateString()]);
+        $this->post('/api/calender/book', $this->form(['periods_id' => $otherPeriod]))->assertOk();
+        $this->assertCount(4, Communication::$sent);
+
+        // Once the pending requests are handled, SMS are sent again.
+        DB::table('bookings')->whereIn('id', [$first, $second])->update(['status' => 'rejected']);
+        $this->post('/api/calender/book', $this->form())->assertOk();
+        $this->assertCount(6, Communication::$sent);
+    }
+
+    public function test_sms_again_when_the_pending_request_is_older_than_an_hour(): void
+    {
+        $first = $this->post('/api/calender/book', $this->form())->assertOk()->json('id');
+        DB::table('bookings')->where('id', '=', $first)->update(['created_at' => now()->subMinutes(61)]);
+
+        $this->post('/api/calender/book', $this->form())->assertOk();
+        $this->assertCount(4, Communication::$sent);
+    }
+
     public function test_missing_and_wrong_fields_are_422_with_swedish_messages(): void
     {
         $this->post('/api/calender/book', $this->form(['name' => '', 'phone' => '12', 'apartment' => 'A1', 'email' => 'nope']))

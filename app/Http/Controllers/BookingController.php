@@ -16,6 +16,12 @@ use Illuminate\Support\Facades\Validator;
 class BookingController
 {
     /**
+     * Rate limit for the public form: a new request sends no SMS while another request for the
+     * same place, made within this many minutes, is still pending.
+     */
+    public const SMS_QUIET_MINUTES = 60;
+
+    /**
      * A booking request from the public calendar form.
      *
      * 422 {"ok": false, "errors": {field: [message, ...]}} with Swedish messages for the booker
@@ -92,6 +98,10 @@ class BookingController
         $booking->load('period.place');
 
         $place = $booking->period->place;
+        if (self::hasRecentPendingRequest($booking)) {
+            // Saved and shown on the admin page, but no SMS: the admin already has one to answer.
+            return new JsonResponse($booking);
+        }
         Communication::informAdmin(
             $place,
             "Ny bokningsförfrågan för {$place->name} {$booking->period->start_date} från {$booking->name}, lgh {$booking->apartment}."
@@ -103,6 +113,20 @@ class BookingController
         );
 
         return new JsonResponse($booking);
+    }
+
+    /**
+     * Another request for the same place that is still pending and was made within SMS_QUIET_MINUTES.
+     * Stops the public form from being used to send many SMS (costs, or texts to strangers' numbers).
+     */
+    private static function hasRecentPendingRequest(Bookings $booking): bool
+    {
+        return Bookings::query()
+            ->where('id', '!=', $booking->id)
+            ->where('status', '=', 'pending')
+            ->where('created_at', '>=', now()->subMinutes(self::SMS_QUIET_MINUTES))
+            ->whereHas('period', fn ($period) => $period->where('places_id', '=', $booking->period->places_id))
+            ->exists();
     }
 
     /**
