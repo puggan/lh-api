@@ -25,6 +25,7 @@ Route::delete('/periods/{id}', PeriodsController::delete(...))->whereNumber('id'
 
 Route::get('/terms', TermsController::terms(...));
 Route::get('/terms/last', TermsController::last(...));
+Route::post('/terms', TermsController::create(...));
 
 Route::get('/request/pending', BookingController::pending(...));
 Route::post('/request/approve', BookingController::approve(...));
