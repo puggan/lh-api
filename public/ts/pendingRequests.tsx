@@ -68,13 +68,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /**
-     * POST /api/request/approve or /api/request/decline. The request is no longer pending afterwards,
+     * POST /api/request/approve, /decline or /spam. The request is no longer pending afterwards,
      * so its table is removed. 409 (approve): the period already has a booked booking.
+     * Spam declines without texting the booker.
      */
-    const answer = async (action: 'approve' | 'decline', request: requests, table: HTMLElement) => {
-        const question = action === 'approve'
-            ? `Acceptera bokningen för ${request.name}, ${request.period.start_date}?`
-            : `Neka bokningen för ${request.name}, ${request.period.start_date}?`;
+    const answer = async (action: 'approve' | 'decline' | 'spam', request: requests, table: HTMLElement) => {
+        const question = {
+            approve: `Acceptera bokningen för ${request.name}, ${request.period.start_date}?`,
+            decline: `Neka bokningen för ${request.name}, ${request.period.start_date}?`,
+            spam: `Markera förfrågan från ${request.name}, ${request.period.start_date} som skräp? Den nekas utan att något SMS skickas.`,
+        }[action];
         if (!confirm(question)) {
             return;
         }
@@ -173,6 +176,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         {approveButton}
                         <button onclick={() => answer('decline', request, table)}>
                             Neka
+                        </button>
+                        <button onclick={() => answer('spam', request, table)} title="Nekar utan att skicka SMS">
+                            Skräp
                         </button>
                     </td>
                 </tr>
