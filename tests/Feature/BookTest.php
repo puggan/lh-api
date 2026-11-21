@@ -51,11 +51,11 @@ class BookTest extends TestCase
 
     public function test_missing_and_wrong_fields_are_422_with_swedish_messages(): void
     {
-        $this->post('/api/calender/book', $this->form(['name' => '', 'phone' => '12', 'apartment' => '11', 'email' => 'nope']))
+        $this->post('/api/calender/book', $this->form(['name' => '', 'phone' => '12', 'apartment' => 'A1', 'email' => 'nope']))
             ->assertStatus(422)
             ->assertJson(['ok' => false])
             ->assertJsonValidationErrors(['name', 'phone', 'apartment', 'email'])
-            ->assertJsonPath('errors.apartment.0', 'Fyll i ditt lägenhetsnummer, 4 siffror, t.ex. 1101.');
+            ->assertJsonPath('errors.apartment.0', 'Fyll i ditt lägenhetsnummer, t.ex. 123.');
 
         $this->assertEmpty(Communication::$sent);
     }
@@ -98,7 +98,7 @@ class BookTest extends TestCase
         return array_filter($override + [
             'periods_id' => $this->period, 'terms_id' => $this->terms, 'purpose' => 'Kalas',
             'name' => 'Test Person', 'phone' => '070-123 45 67', 'email' => 'test@example.com',
-            'street' => 'Gata 1', 'apartment' => '1101', 'zipcode' => '12345', 'city' => 'Test',
+            'street' => 'Gata 1', 'apartment' => '466', 'zipcode' => '12345', 'city' => 'Test',
         ], static fn ($v) => $v !== null);
     }
 
