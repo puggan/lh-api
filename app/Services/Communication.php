@@ -7,8 +7,9 @@ use App\Models\Bookings;
 /**
  * Messages to the booker and to the admins.
  *
- * Sent with PHP's mail() (the server's sendmail), as the booking endpoint always has.
- * While running tests nothing is sent; the messages are collected in self::$sent instead.
+ * Not implemented yet: messages will be sent through an API that is still to be chosen
+ * (not PHP's mail()). Until then nothing is sent. While running tests the messages are
+ * collected in self::$sent, so tests can check what would have been sent.
  */
 class Communication
 {
@@ -20,7 +21,7 @@ class Communication
     /** Informs the booker of $booking, e.g. that the booking was declined. */
     public static function informUser(Bookings $booking, string $subject, string $message): void
     {
-        self::send($booking->email, $subject, $message, mb_encode_mimeheader('LH Höjden', 'UTF-8') . ' <' . self::ADMIN_EMAIL . '>');
+        self::send($booking->email, $subject, $message, self::ADMIN_EMAIL);
     }
 
     /** Informs the admins, e.g. that a new booking request has arrived. Replies go to the booker. */
@@ -36,24 +37,6 @@ class Communication
             return;
         }
 
-        $headers = [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding' => '8bit',
-        ];
-        if ($replyTo) {
-            $headers['Reply-To'] = $replyTo;
-        }
-        // A message that can't be sent must not break the booking, approval or decline that caused it:
-        // the change is already saved. Laravel turns mail()'s warnings (e.g. no sendmail) into exceptions.
-        try {
-            $sent = mail($to, mb_encode_mimeheader($subject, 'UTF-8'), $message, $headers);
-            $error = $sent ? null : 'mail() returned false';
-        } catch (\Throwable $exception) {
-            $error = $exception->getMessage();
-        }
-        if ($error !== null) {
-            // error_log(), not Laravel's log: it reaches the web server's error log even if storage/ isn't writable.
-            error_log("Communication: could not send \"{$subject}\" to {$to}: {$error}");
-        }
+        // todo: send through the communication API
     }
 }
