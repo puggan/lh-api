@@ -15,6 +15,8 @@ type requests = {
     city: string;
     created_at: string;
     update_at: string;
+    /** another booking for the same period is already booked: this request can only be declined */
+    period_booked: boolean;
     period: {
         id: number;
         places_id: number;
@@ -53,6 +55,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         </h2>
     </div>;
 
+    // Periods that are booked: their remaining requests can only be declined.
+    const bookedPeriods = new Set<number>(requests.filter(r => r.period_booked).map(r => r.periods_id));
+    const approveButtons: {periodId: number, button: HTMLButtonElement}[] = [];
+    const disableApproveForBookedPeriods = () => {
+        for (const {periodId, button} of approveButtons) {
+            if (bookedPeriods.has(periodId)) {
+                button.disabled = true;
+                button.title = 'Perioden är redan bokad, den här förfrågan kan bara nekas.';
+            }
+        }
+    };
+
     /**
      * POST /api/request/approve or /api/request/decline. The request is no longer pending afterwards,
      * so its table is removed. 409 (approve): the period already has a booked booking.
@@ -80,18 +94,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             response = null;
         }
         if (!response?.ok) {
+            if (response?.status === 409) {
+                bookedPeriods.add(request.periods_id);
+            }
             alert(response?.status === 409
                 ? 'Perioden är redan bokad av någon annan. Neka den här förfrågan i stället.'
                 : 'Någonting gick fel, försök igen.');
             buttons.forEach(b => b.disabled = false);
+            disableApproveForBookedPeriods();
             return;
         }
         table.remove();
+        if (action === 'approve') {
+            bookedPeriods.add(request.periods_id);
+            disableApproveForBookedPeriods();
+        }
         // e.g. upcomingBookings reloads on this
         document.dispatchEvent(new CustomEvent('lh-bookings-changed'));
     };
 
     for (const request of requests) {
+        const approveButton = <button onclick={() => answer('approve', request, table)}>
+            Acceptera
+        </button> as HTMLButtonElement;
+        approveButtons.push({periodId: request.periods_id, button: approveButton});
         const table: HTMLElement = <table>
                 <tr>
                     <th>
@@ -144,9 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>
                     </th>
                     <td>
-                        <button onclick={() => answer('approve', request, table)}>
-                            Acceptera
-                        </button>
+                        {approveButton}
                         <button onclick={() => answer('decline', request, table)}>
                             Neka
                         </button>
@@ -155,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </table>;
         scriptContent.appendChild(table);
     }
+    disableApproveForBookedPeriods();
 
     if (tsxScriptElement) {
         tsxScriptElement.parentElement.insertBefore(
