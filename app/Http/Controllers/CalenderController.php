@@ -16,16 +16,15 @@ class CalenderController
         $query->with(["place", "bookings"]);
         /** @var Periods $period */
         foreach ($query->get() as $period) {
-            if ($period->bookings->isEmpty()) {
-                if ($period->start_date <= date('Y-m-d')) {
-                    $status = "Passed";
-                } else {
-                    $status = "Available";
-                }
-            } elseif ($period->bookings->where('status', '=', 'booked')->isEmpty()) {
+            // Rejected, unbooked and deleted bookings don't block the period.
+            if ($period->bookings->contains('status', 'booked')) {
+                $status = "Booked";
+            } elseif ($period->start_date <= date('Y-m-d')) {
+                $status = "Passed";
+            } elseif ($period->bookings->contains('status', 'pending')) {
                 $status = "Pending";
             } else {
-                $status = "Booked";
+                $status = "Available";
             }
             $events[] = [
                 "id" => $period->id,
