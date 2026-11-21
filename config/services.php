@@ -36,6 +36,11 @@ return [
         'dryrun' => defined('ELKS_DRYRUN') && ELKS_DRYRUN,
     ],
 
+    // The secret in the admin calendar feed's URL (see App\Http\Controllers\CalendarFeedController).
+    'calendar' => [
+        'token' => defined('LH_CALENDAR_TOKEN') ? LH_CALENDAR_TOKEN : null,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

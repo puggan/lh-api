@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CalenderController;
+use App\Http\Controllers\CalendarFeedController;
 use App\Http\Controllers\PeriodsController;
 use App\Http\Controllers\PlacesController;
 use App\Http\Controllers\TermsController;
@@ -17,6 +18,10 @@ Route::get('/', function () {
 Route::get('/who-am-i', UserController::whoAmI(...));
 Route::get('/places', PlacesController::places(...));
 Route::get('/calender', CalenderController::calender(...));
+Route::get('/calender/{place}/public.ics', CalendarFeedController::publicFeed(...))->whereNumber('place');
+// No login (calendar apps can't log in): the secret token in the URL is the protection.
+Route::get('/calender/{place}/admin/{token}.ics', CalendarFeedController::adminFeed(...))
+    ->whereNumber('place')->where('token', '[0-9a-f]+');
 Route::post('/calender/book', BookingController::book(...));
 Route::get('/terms', TermsController::terms(...));
 Route::get('/terms/last', TermsController::last(...));
@@ -27,6 +32,8 @@ Route::middleware(RequireWpAdmin::class)->group(function () {
     Route::delete('/periods/{id}', PeriodsController::delete(...))->whereNumber('id');
 
     Route::post('/terms', TermsController::create(...));
+
+    Route::get('/calender/feeds', CalendarFeedController::feeds(...));
 
     Route::get('/request/pending', BookingController::pending(...));
     Route::post('/request/approve', BookingController::approve(...));

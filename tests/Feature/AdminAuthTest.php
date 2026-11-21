@@ -28,6 +28,7 @@ class AdminAuthTest extends TestCase
             'create period' => ['POST', '/api/periods'],
             'delete period' => ['DELETE', '/api/periods/1'],
             'publish terms' => ['POST', '/api/terms'],
+            'calendar feeds' => ['GET', '/api/calender/feeds'],
         ];
     }
 
