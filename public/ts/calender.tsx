@@ -220,17 +220,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 const booking_button = document.getElementById('booking_button') as HTMLButtonElement;
                                 booking_button.disabled = true;
                                 const inputData = new FormData(bookingForm);
-                                console.log(inputData);
+                                let response: Response;
                                 try {
-                                    await (await fetch(
+                                    response = await fetch(
                                         "/api/calender/book",
                                         {
                                             body: inputData,
+                                            headers: {Accept: 'application/json'},
                                             method: 'POST',
                                         }
-                                    )).json();
+                                    );
                                 } catch {
                                     alert('Någonting gick fel, försök igen.');
+                                    booking_button.disabled = false;
+                                    return;
+                                }
+                                if (!response.ok) {
+                                    // 422: {"ok": false, "errors": {field: [message, ...]}}, messages in Swedish
+                                    const result = await response.json().catch(() => null) as {errors?: Record<string, string[]>} | null;
+                                    const messages = result?.errors ? Object.values(result.errors).flat() : [];
+                                    alert(messages.length ? messages.join('\n') : 'Någonting gick fel, försök igen.');
                                     booking_button.disabled = false;
                                     return;
                                 }
