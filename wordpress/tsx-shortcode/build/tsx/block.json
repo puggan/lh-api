@@ -12,7 +12,6 @@
   },
   "textdomain": "tsx-shortcode",
   "editorScript": "file:./index.js",
-  "render": "Puggan\\TsxShortCode\\TsxShortCode::shortcode",
   "attributes": {
     "src": {
       "type": "string"
