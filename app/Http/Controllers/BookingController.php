@@ -6,6 +6,7 @@ use App\Actions\CleanupOldBookings;
 use App\Models\Bookings;
 use App\Models\WpUser;
 use App\Services\Communication;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -76,6 +77,34 @@ class BookingController
                 source: 'endpoint',
             )
         );
+    }
+
+    /**
+     * Books the period for this booking and copies the place's deposit onto it.
+     * 409 if the period already has a booked booking (unique index on booked_periods_id).
+     */
+    public static function approve(Request $request): JsonResponse
+    {
+        // Through the model, not a query builder update, so the change is logged.
+        /** @var Bookings $booking */
+        $booking = Bookings::query()->with('period.place')->findOrFail($request->input('bookings_id'));
+        $place = $booking->period->place;
+        $booking->status = 'booked';
+        $booking->deposit = $place->deposit;
+
+        try {
+            $booking->save();
+        } catch (UniqueConstraintViolationException) {
+            return new JsonResponse(['ok' => false, 'error' => 'The period already has a booked booking'], 409);
+        }
+
+        $message = "Din bokning av {$place->name} {$booking->period->start_date} är godkänd.";
+        if ($booking->deposit > 0) {
+            $message .= " Depositionen är {$booking->deposit} kr.";
+        }
+        Communication::informUser($booking, 'bokning godkänd', $message);
+
+        return new JsonResponse(['ok' => true]);
     }
 
     public static function declined(Request $request): JsonResponse
