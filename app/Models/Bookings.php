@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  * @property int $zipcode INT UNSIGNED NOT NULL,
  * @property string $city VARCHAR(255) NOT NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
- * @property \DateTimeImmutable $update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL ON UPDATE CURRENT_TIMESTAMP(),
+ * @property \DateTimeImmutable $updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL ON UPDATE CURRENT_TIMESTAMP(),
  * @property-read Periods $period
  * @property-read Terms $term
  */
