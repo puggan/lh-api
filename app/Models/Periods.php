@@ -41,4 +41,23 @@ class Periods extends Model
     {
         return $this->hasMany(Bookings::class, 'periods_id');
     }
+
+    /**
+     * The status shown in the calendar: "Booked", "Passed" (started and not booked), "Pending"
+     * (has a request) or "Available" (bookable). Rejected, unbooked and deleted bookings don't count.
+     * Load the bookings relation first when doing this for many periods.
+     */
+    public function status(): string
+    {
+        if ($this->bookings->contains('status', 'booked')) {
+            return 'Booked';
+        }
+        if ($this->start_date <= now()->toDateString()) {
+            return 'Passed';
+        }
+        if ($this->bookings->contains('status', 'pending')) {
+            return 'Pending';
+        }
+        return 'Available';
+    }
 }
