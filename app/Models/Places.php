@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
  * @property string $street VARCHAR(255) NOT NULL,
  * @property int $zipcode INT UNSIGNED NOT NULL,
  * @property string $city VARCHAR(255) NOT NULL,
+ * @property int $deposit INT UNSIGNED DEFAULT 0 NOT NULL, SEK
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL
  * @property-read Collection<Periods> $periods
  */

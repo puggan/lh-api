@@ -19,6 +19,9 @@ use Illuminate\Support\Collection;
  * @property int $apartment INT NOT NULL,
  * @property int $zipcode INT UNSIGNED NOT NULL,
  * @property string $city VARCHAR(255) NOT NULL,
+ * @property ?int $deposit INT UNSIGNED NULL, SEK, copied from the place when booked
+ * @property ?\DateTimeImmutable $deposit_paid_at TIMESTAMP NULL,
+ * @property ?\DateTimeImmutable $deposit_returned_at TIMESTAMP NULL,
  * @property \DateTimeImmutable $created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL,
  * @property \DateTimeImmutable $updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP() NOT NULL ON UPDATE CURRENT_TIMESTAMP(),
  * @property-read Periods $period
@@ -32,6 +35,8 @@ class Bookings extends Model
     protected $casts = [
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
+        'deposit_paid_at' => 'immutable_datetime',
+        'deposit_returned_at' => 'immutable_datetime',
     ];
 
     public function period(): BelongsTo
