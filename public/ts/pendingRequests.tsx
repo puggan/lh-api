@@ -53,9 +53,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         </h1>
     </div>;
 
+    /**
+     * POST /api/request/approve or /api/request/decline. The request is no longer pending afterwards,
+     * so its table is removed. 409 (approve): the period already has a booked booking.
+     */
+    const answer = async (action: 'approve' | 'decline', request: requests, table: HTMLElement) => {
+        const question = action === 'approve'
+            ? `Acceptera bokningen för ${request.name}, ${request.period.start_date}?`
+            : `Neka bokningen för ${request.name}, ${request.period.start_date}?`;
+        if (!confirm(question)) {
+            return;
+        }
+        const buttons = table.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+        let response: Response | null;
+        try {
+            response = await fetch(
+                `/api/request/${action}`,
+                {
+                    body: JSON.stringify({bookings_id: request.id}),
+                    headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+                    method: 'POST',
+                }
+            );
+        } catch {
+            response = null;
+        }
+        if (!response?.ok) {
+            alert(response?.status === 409
+                ? 'Perioden är redan bokad av någon annan. Neka den här förfrågan i stället.'
+                : 'Någonting gick fel, försök igen.');
+            buttons.forEach(b => b.disabled = false);
+            return;
+        }
+        table.remove();
+    };
+
     for (const request of requests) {
-        scriptContent.appendChild(
-            <table>
+        const table: HTMLElement = <table>
                 <tr>
                     <th>
                         Datum:
@@ -107,16 +142,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <th>
                     </th>
                     <td>
-                        <button>
+                        <button onclick={() => answer('approve', request, table)}>
                             Acceptera
                         </button>
-                        <button>
+                        <button onclick={() => answer('decline', request, table)}>
                             Neka
                         </button>
                     </td>
                 </tr>
-            </table>
-        )
+            </table>;
+        scriptContent.appendChild(table);
     }
 
     if (tsxScriptElement) {
