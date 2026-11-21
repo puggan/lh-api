@@ -45,15 +45,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="pendingRequests"]');
 
-    const requests = await (await fetch("/api/request/pending")).json() as requests[];
-
-    console.table(requests);
-
     const scriptContent = <div id="pendingRequest">
         <h2>
             Bokningsförfrågningar
         </h2>
     </div>;
+
+    const insertContent = () => {
+        if (tsxScriptElement) {
+            tsxScriptElement.parentElement.insertBefore(
+                scriptContent,
+                tsxScriptElement.nextElementSibling
+            );
+        } else {
+            document.body.appendChild(scriptContent);
+        }
+    };
+
+    // Admin only: 401 when not logged in to WordPress, 403 without editor/administrator rights.
+    const pendingResponse = await fetch("/api/request/pending", {headers: {Accept: 'application/json'}});
+    if (!pendingResponse.ok) {
+        scriptContent.appendChild(<p>
+            {pendingResponse.status === 401
+                ? 'Logga in i WordPress för att se bokningsförfrågningarna.'
+                : pendingResponse.status === 403
+                    ? 'Du får inte hantera bokningar (kräver redaktör eller administratör).'
+                    : 'Kunde inte hämta bokningsförfrågningarna.'}
+        </p>);
+        insertContent();
+        return;
+    }
+    const requests = await pendingResponse.json() as requests[];
 
     // Periods that are booked: their remaining requests can only be declined.
     const bookedPeriods = new Set<number>(requests.filter(r => r.period_booked).map(r => r.periods_id));
@@ -187,12 +209,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     disableApproveForBookedPeriods();
 
-    if (tsxScriptElement) {
-        tsxScriptElement.parentElement.insertBefore(
-            scriptContent,
-            tsxScriptElement.nextElementSibling
-        );
-    } else {
-        document.body.appendChild(scriptContent);
-    }
+    insertContent();
 }, {once: true, passive: true});

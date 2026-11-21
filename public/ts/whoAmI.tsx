@@ -20,10 +20,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const user = await (await fetch('/api/who-am-i', {headers: {Accept: 'application/json'}})).json() as {loggedIn: boolean, who?: string};
-        result.innerText = user.loggedIn
-            ? `✅ API:t känner igen dig som ${user.who}.`
-            : '❌ API:t känner inte igen din inloggning. Bokningarna nedan visas inte.';
+        const user = await (await fetch('/api/who-am-i', {headers: {Accept: 'application/json'}})).json() as {loggedIn: boolean, who?: string, admin?: boolean};
+        result.innerText = !user.loggedIn
+            ? '❌ API:t känner inte igen din inloggning. Logga in i WordPress igen för att se och hantera bokningarna.'
+            : user.admin
+                ? `✅ API:t känner igen dig som ${user.who}.`
+                : `⚠️ API:t känner igen dig som ${user.who}, men du får inte hantera bokningar (kräver redaktör eller administratör).`;
     } catch {
         result.innerText = '❌ Kunde inte nå API:t.';
     }
