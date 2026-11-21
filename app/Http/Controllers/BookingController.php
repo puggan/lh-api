@@ -79,11 +79,11 @@ class BookingController
 
     public static function declined(Request $request): JsonResponse
     {
-        $bookningsId= $request->input('bookings_id');
-
-        //todo: hämta och kolla om booknings finns
-
-        Bookings::query()->where('id', '=', $bookningsId)->update(['status' => 'rejected']);
+        // Through the model, not a query builder update, so the change is logged.
+        /** @var Bookings $booking */
+        $booking = Bookings::query()->findOrFail($request->input('bookings_id'));
+        $booking->status = 'rejected';
+        $booking->save();
 
         //todo:maila
 
