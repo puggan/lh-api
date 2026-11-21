@@ -1,0 +1,43 @@
+#addPeriods {
+    label {
+        display: block;
+        margin: 5px 0;
+
+        > span {
+            display: inline-block;
+            min-width: 8em;
+        }
+
+        small {
+            color: grey;
+            margin-left: 1em;
+        }
+    }
+
+    .forms {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 40px;
+    }
+
+    form {
+        min-width: 280px;
+    }
+
+    label.dates > span {
+        display: block;
+    }
+
+    textarea {
+        font-family: monospace;
+        width: 14em;
+    }
+
+    .results {
+        margin-top: 10px;
+
+        .error {
+            color: darkred;
+        }
+    }
+}
