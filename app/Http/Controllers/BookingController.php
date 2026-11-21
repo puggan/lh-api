@@ -9,6 +9,7 @@ use App\Models\Periods;
 use App\Models\Terms;
 use App\Models\WpUser;
 use App\Services\Communication;
+use App\Support\Sms;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,9 @@ class BookingController
      * for the same place, made within this many minutes, is still pending.
      */
     public const SMS_QUIET_MINUTES = 60;
+
+    /** Redirects to the Bokningar page in wp-admin (RewriteRule in the Apache vhost on ns1). */
+    public const ADMIN_SHORT_URL = 'https://hgf-tuve.se/pr';
 
     /**
      * A booking request from the public calendar form.
@@ -107,11 +111,12 @@ class BookingController
             // Saved and shown on the admin page, but no SMS: the admin already has one to answer.
             return new JsonResponse($booking);
         }
-        Communication::informAdmin(
-            $place,
-            "Ny bokningsförfrågan för {$place->name} {$booking->period->start_date} från {$booking->name}, lgh {$booking->apartment}."
-            . ' Svara här: https://hgf-tuve.se/wp/wp-admin/admin.php?page=lh-bookings',
-        );
+        // One SMS: the booker's name is shortened if needed (Sms::fit), the rest is kept.
+        Communication::informAdmin($place, Sms::fit(
+            'Ny bokningsförfrågan för ' . Sms::toGsm($place->name) . " {$booking->period->start_date} från ",
+            $booking->name,
+            ", lgh {$booking->apartment}. Svara här: " . self::ADMIN_SHORT_URL,
+        ));
         // No SMS to the booker here: the form already confirms the request in the browser.
         return new JsonResponse($booking);
     }
@@ -202,7 +207,7 @@ class BookingController
             return new JsonResponse(['ok' => false, 'error' => 'The period already has a booked booking'], 409);
         }
 
-        $message = "Din bokning av {$place->name} {$booking->period->start_date} är godkänd.";
+        $message = 'Din bokning av ' . Sms::toGsm($place->name) . " {$booking->period->start_date} är godkänd.";
         if ($booking->deposit > 0) {
             $message .= " Depositionen är {$booking->deposit} kr.";
         }
@@ -218,7 +223,7 @@ class BookingController
 
         Communication::informUser(
             $booking,
-            "Tyvärr kan vi inte ta emot din bokning av {$booking->period->place->name} {$booking->period->start_date}.",
+            'Tyvärr kan vi inte ta emot din bokning av ' . Sms::toGsm($booking->period->place->name) . " {$booking->period->start_date}.",
         );
 
         return new JsonResponse(['ok' => true]);

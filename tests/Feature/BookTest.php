@@ -46,6 +46,17 @@ class BookTest extends TestCase
         $this->assertSame('+46793377895', $admin['to']);
         $this->assertStringContainsString('Ny bokningsförfrågan för Lokalen', $admin['message']);
         $this->assertStringContainsString('Test Person, lgh 466', $admin['message']);
+        $this->assertStringEndsWith('Svara här: https://hgf-tuve.se/pr', $admin['message']);
+        $this->assertTrue(\App\Support\Sms::fits($admin['message']), 'one SMS');
+    }
+
+    public function test_admin_sms_with_a_very_long_name_still_fits_one_sms(): void
+    {
+        $this->post('/api/calender/book', $this->form(['name' => str_repeat('Långnamn ', 25) . '😀']))->assertOk();
+
+        $message = Communication::$sent[0]['message'];
+        $this->assertTrue(\App\Support\Sms::fits($message));
+        $this->assertStringEndsWith('Svara här: https://hgf-tuve.se/pr', $message);
     }
 
     public function test_no_sms_when_an_admin_books(): void

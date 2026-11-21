@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Bookings;
 use App\Models\Places;
+use App\Support\Sms;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -45,6 +46,10 @@ class Communication
     private static function send(int $phone, string $message): void
     {
         $to = '+46' . $phone;
+        if (!Sms::fits($message)) {
+            // Still sent, but as several SMS (or as UCS-2): shorten the text where it is built.
+            error_log('Communication: message is longer than one SMS (' . (Sms::length($message) ?? 'UCS-2') . '): ' . mb_substr($message, 0, 60));
+        }
         if (app()->runningUnitTests()) {
             self::$sent[] = ['to' => $to, 'message' => $message];
         }
