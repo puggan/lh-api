@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Validator;
 class BookingController
 {
     /**
-     * Rate limit for the public form: a new request sends no SMS while another request for the
-     * same place, made within this many minutes, is still pending.
+     * Rate limit for the public form: a new request sends no SMS to the admin while another request
+     * for the same place, made within this many minutes, is still pending.
      */
     public const SMS_QUIET_MINUTES = 60;
 
@@ -107,17 +107,13 @@ class BookingController
             "Ny bokningsförfrågan för {$place->name} {$booking->period->start_date} från {$booking->name}, lgh {$booking->apartment}."
             . ' Svara här: https://hgf-tuve.se/wp/wp-admin/admin.php?page=lh-bookings',
         );
-        Communication::informUser(
-            $booking,
-            "Vi har tagit emot din bokningsförfrågan för {$place->name} {$booking->period->start_date} och svarar inom kort. /LH Höjden",
-        );
-
+        // No SMS to the booker here: the form already confirms the request in the browser.
         return new JsonResponse($booking);
     }
 
     /**
      * Another request for the same place that is still pending and was made within SMS_QUIET_MINUTES.
-     * Stops the public form from being used to send many SMS (costs, or texts to strangers' numbers).
+     * Stops the public form from being used to send the admin many SMS.
      */
     private static function hasRecentPendingRequest(Bookings $booking): bool
     {

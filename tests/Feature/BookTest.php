@@ -31,7 +31,7 @@ class BookTest extends TestCase
         $this->period = $this->period(now()->addDays(10)->toDateString());
     }
 
-    public function test_valid_request_creates_a_pending_booking_and_informs_both(): void
+    public function test_valid_request_creates_a_pending_booking_and_informs_the_admin(): void
     {
         $response = $this->post('/api/calender/book', $this->form(['phone' => '+46 70-123 45 67', 'zipcode' => '123 45']))
             ->assertOk()
@@ -40,35 +40,35 @@ class BookTest extends TestCase
         $this->assertDatabaseHas('bookings', ['id' => $response->json('id'), 'status' => 'pending', 'description' => 'Kalas']);
         $this->assertDatabaseHas('logs', ['table_name' => 'bookings', 'row_id' => $response->json('id'), 'action' => 'created']);
 
-        $this->assertCount(2, Communication::$sent);
-        [$admin, $user] = Communication::$sent;
+        // Only the admin gets an SMS; the booker sees the confirmation in the browser.
+        $this->assertCount(1, Communication::$sent);
+        [$admin] = Communication::$sent;
         $this->assertSame('46793377895', $admin['to']);
         $this->assertStringContainsString('Ny bokningsförfrågan för Lokalen', $admin['message']);
         $this->assertStringContainsString('Test Person, lgh 466', $admin['message']);
-        $this->assertSame('46701234567', $user['to']);
-        $this->assertStringContainsString('Vi har tagit emot din bokningsförfrågan för Lokalen', $user['message']);
     }
 
     public function test_no_sms_while_a_recent_request_for_the_same_place_is_pending(): void
     {
         $first = $this->post('/api/calender/book', $this->form())->assertOk()->json('id');
-        $this->assertCount(2, Communication::$sent);
+        $this->assertCount(1, Communication::$sent);
 
         // Same place, first request still pending: saved, but no SMS.
         $second = $this->post('/api/calender/book', $this->form(['name' => 'Second']))->assertOk()->json('id');
         $this->assertDatabaseHas('bookings', ['id' => $second, 'status' => 'pending']);
-        $this->assertCount(2, Communication::$sent);
+        $this->assertCount(1, Communication::$sent);
 
         // Another place is not affected.
         $otherPlace = DB::table('places')->insertGetId(['name' => 'Annan', 'description' => '', 'street' => 'Gata 2', 'zipcode' => 12345, 'city' => 'Test', 'admin_phone' => 701111111]);
         $otherPeriod = DB::table('periods')->insertGetId(['places_id' => $otherPlace, 'start_date' => now()->addDays(10)->toDateString(), 'end_date' => now()->addDays(10)->toDateString()]);
         $this->post('/api/calender/book', $this->form(['periods_id' => $otherPeriod]))->assertOk();
-        $this->assertCount(4, Communication::$sent);
+        $this->assertCount(2, Communication::$sent);
+        $this->assertSame('46701111111', Communication::$sent[1]['to']);
 
         // Once the pending requests are handled, SMS are sent again.
         DB::table('bookings')->whereIn('id', [$first, $second])->update(['status' => 'rejected']);
         $this->post('/api/calender/book', $this->form())->assertOk();
-        $this->assertCount(6, Communication::$sent);
+        $this->assertCount(3, Communication::$sent);
     }
 
     public function test_sms_again_when_the_pending_request_is_older_than_an_hour(): void
@@ -77,7 +77,7 @@ class BookTest extends TestCase
         DB::table('bookings')->where('id', '=', $first)->update(['created_at' => now()->subMinutes(61)]);
 
         $this->post('/api/calender/book', $this->form())->assertOk();
-        $this->assertCount(4, Communication::$sent);
+        $this->assertCount(2, Communication::$sent);
     }
 
     public function test_missing_and_wrong_fields_are_422_with_swedish_messages(): void
