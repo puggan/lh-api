@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
+ * A WordPress user (lh_users). The API shares the login with WordPress: see loggedIn().
+ *
  * @property int $ID BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  * @property string $user_login VARCHAR(60) DEFAULT '' NOT NULL,
  * @property string $user_pass VARCHAR(255) DEFAULT '' NOT NULL,
@@ -18,97 +21,129 @@ use Illuminate\Database\Eloquent\Model;
  */
 class WpUser extends Model
 {
-    protected $table = 'lh_users';
+    /** WordPress table prefix ($table_prefix in wp-config.php). */
+    public const TABLE_PREFIX = 'lh_';
+
+    protected $table = self::TABLE_PREFIX . 'users';
     protected $primaryKey = 'ID';
     public $timestamps = false;
     protected $casts = [
         'user_registered' => 'immutable_datetime',
     ];
 
+    /** The answer of loggedIn() for this request: a user, false for "nobody", null for "not checked yet". */
+    private static self|false|null $loggedInUser = null;
+
+    /** @var ?array<string, bool> */
+    private ?array $capabilities = null;
+
+    /**
+     * The user of WordPress's "logged in" cookie, checked the way wp_validate_auth_cookie() does:
+     * not expired, signed with LOGGED_IN_KEY/LOGGED_IN_SALT and the user's password hash,
+     * and its session still active (logging out of WordPress ends it).
+     */
     public static function loggedIn(): ?self
     {
-        /** @var self|false|null $loggedInUser */
-        static $loggedInUser = null;
-
-        if ($loggedInUser === false) {
-            return null;
+        if (self::$loggedInUser === null) {
+            self::$loggedInUser = self::fromCookie() ?? false;
         }
+        return self::$loggedInUser ?: null;
+    }
 
-        if ($loggedInUser instanceof self) {
-            return $loggedInUser;
-        }
+    /** For tests: act as $user (or as nobody), without a cookie. Null checks the cookie again. */
+    public static function setLoggedIn(self|false|null $user): void
+    {
+        self::$loggedInUser = $user;
+    }
 
+    private static function fromCookie(): ?self
+    {
         $siteUrl = WpOptions::getOptionValue('siteurl');
-        if (!$siteUrl) {
-            $loggedInUser = false;
+        $cookie = $siteUrl ? ($_COOKIE['wordpress_logged_in_' . md5($siteUrl)] ?? null) : null;
+        if (!is_string($cookie)) {
             return null;
         }
 
-        $cookieRawValue = $_COOKIE['wordpress_logged_in_' . md5($siteUrl)] ?? null;
+        $parts = explode('|', $cookie);
+        if (count($parts) !== 4) {
+            return null;
+        }
+        [$username, $expiration, $token, $hmac] = $parts;
 
-        if (!$cookieRawValue) {
-            $loggedInUser = false;
+        if ((int)$expiration < time()) {
             return null;
         }
 
-        /** @var object{username: string, expiration: string, token: string, hmac: string, scheme: string} $cookieValues */
-        $cookieValues = (object)array_combine(
-            [
-                'username',
-                'expiration',
-                'token',
-                'hmac',
-                'scheme',
-            ],
-            array_slice(
-                explode('|', $cookieRawValue . '|logged_in||||'),
-                0,
-                5
-            )
-        );
-
-        if ($cookieValues->expiration < time()) {
-            return null;
-        }
-
-        $user = self::query()->where('user_login', '=', $cookieValues->username)->first();
+        /** @var ?self $user */
+        $user = self::query()->where('user_login', '=', $username)->first();
         if (!$user) {
-            $loggedInUser = false;
             return null;
         }
 
-        $hash = hash_hmac(
-            'sha256',
-            implode(
-                '|',
-                [
-                    $cookieValues->username,
-                    $cookieValues->expiration,
-                    $cookieValues->token,
-                ]
-            ),
-            hash_hmac(
-                'md5',
-                implode(
-                    '|',
-                    [
-                        $cookieValues->username,
-                        self::passFrag($user->user_pass),
-                        $cookieValues->expiration,
-                        $cookieValues->token,
-                    ]
-                ),
-                LOGGED_IN_KEY . LOGGED_IN_SALT
-            )
+        $key = hash_hmac(
+            'md5',
+            implode('|', [$username, self::passFrag($user->user_pass), $expiration, $token]),
+            LOGGED_IN_KEY . LOGGED_IN_SALT,
         );
-
-        if (!hash_equals($hash, $cookieValues->hmac)) {
-            $loggedInUser = false;
+        $expected = hash_hmac('sha256', implode('|', [$username, $expiration, $token]), $key);
+        if (!hash_equals($expected, $hmac)) {
             return null;
         }
 
-        $loggedInUser = $user;
-        return $loggedInUser;
+        if (!$user->hasActiveSession($token)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    /**
+     * WordPress keeps the user's sessions in the usermeta "session_tokens", keyed by sha256 of the
+     * cookie's token (WP_User_Meta_Session_Tokens). A logout removes the session.
+     */
+    public function hasActiveSession(string $token): bool
+    {
+        $sessions = $this->meta('session_tokens');
+        $session = is_array($sessions) ? ($sessions[hash('sha256', $token)] ?? null) : null;
+        return is_array($session) && ($session['expiration'] ?? 0) >= time();
+    }
+
+    /**
+     * Whether the user has a WordPress capability, e.g. 'edit_pages' (editors and administrators),
+     * from the roles in usermeta "<prefix>capabilities" and the role definitions in the option
+     * "<prefix>user_roles", like WP_User::has_cap() (without plugins' map_meta_cap filters).
+     */
+    public function hasCapability(string $capability): bool
+    {
+        if ($this->capabilities === null) {
+            $roles = @unserialize(
+                (string)WpOptions::query()->where('option_name', '=', self::TABLE_PREFIX . 'user_roles')->value('option_value'),
+                ['allowed_classes' => false],
+            ) ?: [];
+            $capabilities = [];
+            foreach ((array)$this->meta(self::TABLE_PREFIX . 'capabilities') as $name => $granted) {
+                if (!$granted) {
+                    continue;
+                }
+                if (isset($roles[$name]['capabilities'])) {
+                    $capabilities = array_merge($capabilities, array_filter($roles[$name]['capabilities']));
+                } else {
+                    $capabilities[$name] = true; // a capability given directly to the user
+                }
+            }
+            $this->capabilities = $capabilities;
+        }
+        return !empty($this->capabilities[$capability]);
+    }
+
+    private function meta(string $key): mixed
+    {
+        $value = DB::table(self::TABLE_PREFIX . 'usermeta')
+            ->where('user_id', '=', $this->ID)
+            ->where('meta_key', '=', $key)
+            ->value('meta_value');
+        // @: WordPress stores some values unserialized; those come back as false.
+        return $value === null ? null : @unserialize($value, ['allowed_classes' => false]);
     }
 
     /**
