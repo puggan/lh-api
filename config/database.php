@@ -40,6 +40,10 @@ return [
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
+            // Same zone as PHP (config/app.php), so DB defaults like CURRENT_TIMESTAMP and values
+            // written by Laravel agree. Named zones need the mysql.time_zone* tables loaded
+            // (mariadb-tzinfo-to-sql), otherwise every connection fails with error 1298.
+            'timezone' => 'Europe/Stockholm',
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
