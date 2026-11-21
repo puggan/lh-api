@@ -111,7 +111,7 @@ class BookTest extends TestCase
 
     public function test_period_that_has_started_is_422(): void
     {
-        $this->assertPeriodRejected($this->period(now()->toDateString()), 'Dagen/perioden har redan börjat och kan inte bokas.');
+        $this->assertPeriodRejected($this->period(now()->toDateString()), 'Dagen har redan börjat och kan inte bokas.');
     }
 
     public function test_deleted_period_is_422(): void
@@ -122,7 +122,17 @@ class BookTest extends TestCase
     public function test_booked_period_is_422(): void
     {
         DB::table('bookings')->insert($this->form(['status' => 'booked', 'periods_id' => $this->period, 'phone' => 701234567, 'description' => 'x', 'purpose' => null]) + []);
-        $this->assertPeriodRejected($this->period, 'Dagen/perioden är redan bokad.');
+        $this->assertPeriodRejected($this->period, 'Dagen är redan bokad.');
+    }
+
+    public function test_booked_multi_day_period_is_422_with_perioden(): void
+    {
+        $start = now()->addDays(20);
+        $period = DB::table('periods')->insertGetId([
+            'places_id' => $this->place, 'start_date' => $start->toDateString(), 'end_date' => $start->copy()->addDay()->toDateString(),
+        ]);
+        DB::table('bookings')->insert($this->form(['status' => 'booked', 'periods_id' => $period, 'phone' => 701234567, 'description' => 'x', 'purpose' => null]));
+        $this->assertPeriodRejected($period, 'Perioden är redan bokad.');
     }
 
     public function test_old_terms_are_422(): void

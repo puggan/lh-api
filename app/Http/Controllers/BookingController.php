@@ -70,9 +70,9 @@ class BookingController
             if (!$period) {
                 $validator->errors()->add('periods_id', 'Dagen/perioden finns inte längre, ladda om sidan.');
             } elseif ($period->start_date <= now()->toDateString()) {
-                $validator->errors()->add('periods_id', 'Dagen/perioden har redan börjat och kan inte bokas.');
+                $validator->errors()->add('periods_id', self::dayOrPeriod($period) . ' har redan börjat och kan inte bokas.');
             } elseif ($period->bookings()->where('status', '=', 'booked')->exists()) {
-                $validator->errors()->add('periods_id', 'Dagen/perioden är redan bokad.');
+                $validator->errors()->add('periods_id', self::dayOrPeriod($period) . ' är redan bokad.');
             }
             if ((int)$input['terms_id'] !== (int)Terms::query()->max('id')) {
                 $validator->errors()->add('terms_id', 'Villkoren har ändrats, ladda om sidan och läs de nya villkoren.');
@@ -114,6 +114,12 @@ class BookingController
         );
         // No SMS to the booker here: the form already confirms the request in the browser.
         return new JsonResponse($booking);
+    }
+
+    /** "Dagen" for a single day, "Perioden" for several days, for messages to the booker. */
+    private static function dayOrPeriod(Periods $period): string
+    {
+        return $period->start_date === $period->end_date ? 'Dagen' : 'Perioden';
     }
 
     /**

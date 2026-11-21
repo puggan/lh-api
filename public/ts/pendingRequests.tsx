@@ -79,12 +79,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Periods that are booked: their remaining requests can only be declined.
     const bookedPeriods = new Set<number>(requests.filter(r => r.period_booked).map(r => r.periods_id));
-    const approveButtons: {periodId: number, button: HTMLButtonElement}[] = [];
+    /** "Dagen" for a single day, "Perioden" for several days. */
+    const dayOrPeriod = (request: requests) => request.period.start_date === request.period.end_date ? 'Dagen' : 'Perioden';
+    const approveButtons: {periodId: number, request: requests, button: HTMLButtonElement}[] = [];
     const disableApproveForBookedPeriods = () => {
-        for (const {periodId, button} of approveButtons) {
+        for (const {periodId, request, button} of approveButtons) {
             if (bookedPeriods.has(periodId)) {
                 button.disabled = true;
-                button.title = 'Dagen/perioden är redan bokad, den här förfrågan kan bara nekas.';
+                button.title = `${dayOrPeriod(request)} är redan bokad, den här förfrågan kan bara nekas.`;
             }
         }
     };
@@ -123,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 bookedPeriods.add(request.periods_id);
             }
             alert(response?.status === 409
-                ? 'Dagen/perioden är redan bokad av någon annan. Neka den här förfrågan i stället.'
+                ? `${dayOrPeriod(request)} är redan bokad av någon annan. Neka den här förfrågan i stället.`
                 : 'Någonting gick fel, försök igen.');
             buttons.forEach(b => b.disabled = false);
             disableApproveForBookedPeriods();
@@ -142,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const approveButton = <button onclick={() => answer('approve', request, table)}>
             Acceptera
         </button> as HTMLButtonElement;
-        approveButtons.push({periodId: request.periods_id, button: approveButton});
+        approveButtons.push({periodId: request.periods_id, request, button: approveButton});
         const table: HTMLElement = <table>
                 <tr>
                     <th>
