@@ -1,0 +1,35 @@
+#upcomingBookings {
+    table {
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border-bottom: dashed grey 1px;
+        padding: 5px 20px 5px 0;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    tr[data-status="Booked"] > td:nth-child(3) {
+        color: darkgreen;
+        font-weight: bold;
+    }
+
+    tr[data-status="Pending"] > td:nth-child(3) {
+        color: darkorange;
+        font-weight: bold;
+    }
+
+    ul {
+        margin: 0;
+    }
+
+    li[data-status="rejected"], li[data-status="unbooked"], li[data-status="deleted"] {
+        color: grey;
+        text-decoration: line-through;
+    }
+
+    .phone-prefix {
+        color: grey;
+    }
+}
