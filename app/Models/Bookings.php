@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * @property string $status ENUM ('pending', 'booked', 'unbooked', 'rejected', 'deleted') NOT NULL,
  * @property string $description TEXT NOT NULL,
  * @property string $name VARCHAR(255) NOT NULL,
- * @property int $phone INT NOT NULL,
+ * @property int $phone BIGINT NOT NULL,
  * @property string $email VARCHAR(255) NOT NULL,
  * @property string $street VARCHAR(255) NOT NULL,
  * @property int $apartment INT NOT NULL,
