@@ -93,7 +93,7 @@ class WpUser extends Model
                     '|',
                     [
                         $cookieValues->username,
-                        substr($user->user_pass, 8, 4),
+                        self::passFrag($user->user_pass),
                         $cookieValues->expiration,
                         $cookieValues->token,
                     ]
@@ -109,5 +109,18 @@ class WpUser extends Model
 
         $loggedInUser = $user;
         return $loggedInUser;
+    }
+
+    /**
+     * The 4 characters of the password hash that are part of the cookie signature, as in
+     * WordPress's wp_validate_auth_cookie(). Since WordPress 6.8, passwords are re-hashed on login
+     * to the "$wp$2y$..." format, and for those the fragment is taken from the end of the hash.
+     */
+    public static function passFrag(string $userPass): string
+    {
+        if (str_starts_with($userPass, '$P$') || str_starts_with($userPass, '$2y$')) {
+            return substr($userPass, 8, 4);
+        }
+        return substr($userPass, -4);
     }
 }

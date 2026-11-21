@@ -72,12 +72,15 @@ class WhoAmITest extends TestCase
      * "username|expiration|token|hmac", where
      *   key  = hmac_md5("username|pass_frag|expiration|token", LOGGED_IN_KEY . LOGGED_IN_SALT)
      *   hmac = hmac_sha256("username|expiration|token", key)
-     * and pass_frag is 4 characters of the stored password hash.
+     * and pass_frag is 4 characters of the stored password hash (see WpUser::passFrag()).
      */
     private function setLoginCookie(WpUser $user, int $expiration, ?string $hmac = null): void
     {
         $token = 'test-token';
-        $passFrag = substr($user->user_pass, 8, 4);
+        // Like WordPress 6.8+: old phpass/bcrypt hashes use characters 8-11, "$wp$" hashes the last 4.
+        $passFrag = str_starts_with($user->user_pass, '$P$') || str_starts_with($user->user_pass, '$2y$')
+            ? substr($user->user_pass, 8, 4)
+            : substr($user->user_pass, -4);
         $key = hash_hmac(
             'md5',
             "{$user->user_login}|{$passFrag}|{$expiration}|{$token}",
