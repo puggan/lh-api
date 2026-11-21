@@ -47,7 +47,7 @@ class DeclineBookingTest extends TestCase
         $this->assertSame('rejected', $log->action);
 
         $this->assertCount(1, Communication::$sent);
-        $this->assertSame('46701234567', Communication::$sent[0]['to']);
+        $this->assertSame('+46701234567', Communication::$sent[0]['to']);
         $this->assertStringContainsString('Tyvärr', Communication::$sent[0]['message']);
     }
 

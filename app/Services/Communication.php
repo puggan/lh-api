@@ -7,19 +7,20 @@ use App\Models\Places;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Messages to the booker and to the admin, as SMS through SMSAPI (https://www.smsapi.com/docs/).
+ * Messages to the booker and to the admin, as SMS through 46elks (https://46elks.com/docs/send-sms).
  *
  * Configured with constants in the shared wp-config.php (see config/services.php):
- * SMSAPI_TOKEN (without it nothing is sent), optional SMSAPI_FROM (a verified sender name)
- * and SMSAPI_TEST (true: SMSAPI only validates, nothing is sent or charged).
- * SMSAPI only accepts requests from whitelisted IPs (ns1).
+ * ELKS_API_USERNAME and ELKS_API_PASSWORD (without them nothing is sent), optional ELKS_FROM
+ * (sender name, 3-11 letters/digits, not starting with a digit) and ELKS_DRYRUN
+ * (true: 46elks only validates, nothing is sent).
  *
  * A message that can't be sent never breaks the request that sent it; the failure goes to the error log.
  * While running tests the messages are also collected in self::$sent.
  */
 class Communication
 {
-    public const API_URL = 'https://api.smsapi.com/sms.do';
+    public const API_URL = 'https://api.46elks.com/a1/sms';
+    public const DEFAULT_FROM = 'LHHojden';
 
     /** @var list<array{to: string, message: string}> messages "sent" during tests */
     public static array $sent = [];
@@ -43,30 +44,35 @@ class Communication
     /** @param int $phone Swedish number as stored, without the leading 0 */
     private static function send(int $phone, string $message): void
     {
-        $to = '46' . $phone;
+        $to = '+46' . $phone;
         if (app()->runningUnitTests()) {
             self::$sent[] = ['to' => $to, 'message' => $message];
         }
 
-        $token = config('services.smsapi.token');
-        if (!$token) {
+        $username = config('services.elks.username');
+        $password = config('services.elks.password');
+        if (!$username || !$password) {
             return;
         }
 
-        $parameters = ['to' => $to, 'message' => $message, 'format' => 'json'];
-        if ($from = config('services.smsapi.from')) {
-            $parameters['from'] = $from;
-        }
-        if (config('services.smsapi.test')) {
-            $parameters['test'] = 1;
+        $parameters = [
+            'from' => config('services.elks.from') ?: self::DEFAULT_FROM,
+            'to' => $to,
+            'message' => $message,
+        ];
+        if (config('services.elks.dryrun')) {
+            $parameters['dryrun'] = 'yes';
         }
 
         try {
-            $response = Http::withToken($token)->asForm()->timeout(10)->post(self::API_URL, $parameters);
-            // Errors come as {"error": 98, "message": "..."} with HTTP 200 (seen on ns1), so check the body, not only the status.
-            $error = $response->json('error') !== null
-                ? "error {$response->json('error')}: {$response->json('message')}"
-                : ($response->successful() ? null : "HTTP {$response->status()}");
+            $response = Http::withBasicAuth($username, $password)->asForm()->timeout(10)->post(self::API_URL, $parameters);
+            if (!$response->successful()) {
+                $error = "HTTP {$response->status()}: " . mb_substr(trim($response->body()), 0, 200);
+            } elseif ($response->json('status') === 'failed') {
+                $error = 'status failed';
+            } else {
+                $error = null;
+            }
         } catch (\Throwable $exception) {
             $error = $exception->getMessage();
         }

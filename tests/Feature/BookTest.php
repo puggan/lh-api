@@ -43,7 +43,7 @@ class BookTest extends TestCase
         // Only the admin gets an SMS; the booker sees the confirmation in the browser.
         $this->assertCount(1, Communication::$sent);
         [$admin] = Communication::$sent;
-        $this->assertSame('46793377895', $admin['to']);
+        $this->assertSame('+46793377895', $admin['to']);
         $this->assertStringContainsString('Ny bokningsförfrågan för Lokalen', $admin['message']);
         $this->assertStringContainsString('Test Person, lgh 466', $admin['message']);
     }
@@ -63,7 +63,7 @@ class BookTest extends TestCase
         $otherPeriod = DB::table('periods')->insertGetId(['places_id' => $otherPlace, 'start_date' => now()->addDays(10)->toDateString(), 'end_date' => now()->addDays(10)->toDateString()]);
         $this->post('/api/calender/book', $this->form(['periods_id' => $otherPeriod]))->assertOk();
         $this->assertCount(2, Communication::$sent);
-        $this->assertSame('46701111111', Communication::$sent[1]['to']);
+        $this->assertSame('+46701111111', Communication::$sent[1]['to']);
 
         // Once the pending requests are handled, SMS are sent again.
         DB::table('bookings')->whereIn('id', [$first, $second])->update(['status' => 'rejected']);

@@ -29,10 +29,11 @@ return [
     ],
 
     // Constants in the shared wp-config.php (see App\Services\Communication).
-    'smsapi' => [
-        'token' => defined('SMSAPI_TOKEN') ? SMSAPI_TOKEN : null,
-        'from' => defined('SMSAPI_FROM') ? SMSAPI_FROM : null,
-        'test' => defined('SMSAPI_TEST') && SMSAPI_TEST,
+    'elks' => [
+        'username' => defined('ELKS_API_USERNAME') ? ELKS_API_USERNAME : null,
+        'password' => defined('ELKS_API_PASSWORD') ? ELKS_API_PASSWORD : null,
+        'from' => defined('ELKS_FROM') ? ELKS_FROM : null,
+        'dryrun' => defined('ELKS_DRYRUN') && ELKS_DRYRUN,
     ],
 
     'slack' => [
