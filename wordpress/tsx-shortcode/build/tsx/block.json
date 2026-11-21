@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "tsx-shortcode/tsx",
+  "version": "0.0.1",
+  "title": "TSX",
+  "category": "widgets",
+  "description": "TSX Script",
+  "example": {},
+  "supports": {
+    "html": false
+  },
+  "textdomain": "tsx-shortcode",
+  "editorScript": "file:./index.js",
+  "render": "Puggan\\TsxShortCode\\TsxShortCode::shortcode",
+  "attributes": {
+    "src": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    }
+  }
+}
