@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const question = {
             approve: `Acceptera bokningen för ${request.name}, ${request.period.start_date}?`,
             decline: `Neka bokningen för ${request.name}, ${request.period.start_date}?`,
-            spam: `Markera förfrågan från ${request.name}, ${request.period.start_date} som skräp? Den nekas utan att något SMS skickas.`,
+            spam: `Markera förfrågan från ${request.name}, ${request.period.start_date} som spam? Den nekas utan att något SMS skickas.`,
         }[action];
         if (!confirm(question)) {
             return;
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             Neka
                         </button>
                         <button onclick={() => answer('spam', request, table)} title="Nekar utan att skicka SMS">
-                            Skräp
+                            Spam
                         </button>
                     </td>
                 </tr>
