@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\WpOptions;
 use App\Models\WpUser;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tests\TestCase;
@@ -11,7 +12,7 @@ use Tests\TestCase;
 /**
  * GET /api/who-am-i, which checks the WordPress "logged in" cookie.
  *
- * Read-only: it only reads lh_options and lh_users from the configured (WordPress) database.
+ * Creates its own WordPress test users inside a transaction that is rolled back after each test.
  *
  * Each test runs in its own PHP process, because WpUser::loggedIn() caches its answer
  * in a static variable and reads $_COOKIE directly.
@@ -20,6 +21,10 @@ use Tests\TestCase;
 #[PreserveGlobalState(false)]
 class WhoAmITest extends TestCase
 {
+    use DatabaseTransactions;
+
+    private const TOKEN = 'test-token';
+
     public function test_without_cookie_is_not_logged_in(): void
     {
         $this->getJson('/api/who-am-i')
@@ -27,19 +32,39 @@ class WhoAmITest extends TestCase
             ->assertExactJson(['loggedIn' => false]);
     }
 
-    public function test_valid_cookie_is_logged_in(): void
+    public function test_valid_cookie_of_an_administrator(): void
     {
-        $user = $this->anyUser();
+        $user = $this->userWithSession('administrator');
         $this->setLoginCookie($user, time() + 3600);
 
         $this->getJson('/api/who-am-i')
             ->assertOk()
-            ->assertExactJson(['loggedIn' => true, 'who' => $user->user_login]);
+            ->assertExactJson(['loggedIn' => true, 'who' => $user->user_login, 'admin' => true]);
+    }
+
+    public function test_valid_cookie_of_a_subscriber_is_not_admin(): void
+    {
+        $user = $this->userWithSession('subscriber');
+        $this->setLoginCookie($user, time() + 3600);
+
+        $this->getJson('/api/who-am-i')
+            ->assertOk()
+            ->assertExactJson(['loggedIn' => true, 'who' => $user->user_login, 'admin' => false]);
+    }
+
+    public function test_cookie_of_a_logged_out_session_is_not_logged_in(): void
+    {
+        $user = $this->createWpUser('administrator'); // no active sessions: logged out
+        $this->setLoginCookie($user, time() + 3600);
+
+        $this->getJson('/api/who-am-i')
+            ->assertOk()
+            ->assertExactJson(['loggedIn' => false]);
     }
 
     public function test_cookie_with_wrong_signature_is_not_logged_in(): void
     {
-        $user = $this->anyUser();
+        $user = $this->userWithSession('administrator');
         $this->setLoginCookie($user, time() + 3600, hmac: str_repeat('0', 64));
 
         $this->getJson('/api/who-am-i')
@@ -49,7 +74,7 @@ class WhoAmITest extends TestCase
 
     public function test_expired_cookie_is_not_logged_in(): void
     {
-        $user = $this->anyUser();
+        $user = $this->userWithSession('administrator');
         $this->setLoginCookie($user, time() - 60);
 
         $this->getJson('/api/who-am-i')
@@ -57,14 +82,10 @@ class WhoAmITest extends TestCase
             ->assertExactJson(['loggedIn' => false]);
     }
 
-    private function anyUser(): WpUser
+    /** A user with an active WordPress session for self::TOKEN, like after logging in. */
+    private function userWithSession(string $role): WpUser
     {
-        /** @var ?WpUser $user */
-        $user = WpUser::query()->first();
-        if (!$user) {
-            $this->markTestSkipped('No WordPress users in the database.');
-        }
-        return $user;
+        return $this->createWpUser($role, [hash('sha256', self::TOKEN) => ['expiration' => time() + 3600]]);
     }
 
     /**
@@ -76,7 +97,7 @@ class WhoAmITest extends TestCase
      */
     private function setLoginCookie(WpUser $user, int $expiration, ?string $hmac = null): void
     {
-        $token = 'test-token';
+        $token = self::TOKEN;
         // Like WordPress 6.8+: old phpass/bcrypt hashes use characters 8-11, "$wp$" hashes the last 4.
         $passFrag = str_starts_with($user->user_pass, '$P$') || str_starts_with($user->user_pass, '$2y$')
             ? substr($user->user_pass, 8, 4)

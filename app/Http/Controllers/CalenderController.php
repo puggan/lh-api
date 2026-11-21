@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\RequireWpAdmin;
 use App\Models\Periods;
 use App\Models\WpUser;
 use Illuminate\Http\JsonResponse;
@@ -10,7 +11,8 @@ class CalenderController
 {
     public static function calender(): JsonResponse
     {
-        $user = WpUser::loggedIn();
+        // The bookings (personal data) only for admins.
+        $isAdmin = (bool)WpUser::loggedIn()?->hasCapability(RequireWpAdmin::CAPABILITY);
         $events = [];
         $query = Periods::query();
         $query->with(["place", "bookings"]);
@@ -33,7 +35,7 @@ class CalenderController
                 "start_date" => $period->start_date,
                 "end_date" => $period->end_date,
                 "status" => $status,
-                "bookings" => $user ? $period->bookings : null
+                "bookings" => $isAdmin ? $period->bookings : null
             ];
         }
         return new JsonResponse($events);
