@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CleanupOldBookings;
 use App\Models\Bookings;
+use App\Models\WpUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -60,6 +62,21 @@ class BookingController
         $pending = Bookings::query()->with('period')->where('status', '=', 'pending')->get();
         return new JsonResponse($pending);
     }
+    /**
+     * Runs the same cleanup as the scheduled `bookings:cleanup` command,
+     * in case the scheduler is not running. ?dry_run=1 only counts.
+     */
+    public static function cleanup(Request $request): JsonResponse
+    {
+        return new JsonResponse(
+            CleanupOldBookings::run(
+                dryRun: $request->boolean('dry_run'),
+                wpUsersId: WpUser::loggedIn()?->ID,
+                source: 'endpoint',
+            )
+        );
+    }
+
     public static function declined(Request $request): JsonResponse
     {
         $bookningsId= $request->input('bookings_id');

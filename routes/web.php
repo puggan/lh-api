@@ -23,3 +23,4 @@ Route::get('/terms', TermsController::terms(...));
 Route::get('/terms/last', TermsController::last(...));
 
 Route::get('/request/pending', BookingController::pending(...));
+Route::post('/request/cleanup', BookingController::cleanup(...));
