@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Kontaktuppgifter:
                     </th>
                     <td>
-                        {request.phone}<br/>
+                        <span class="phone-prefix">+46 </span>{request.phone}<br/>
                         {request.email}
                     </td>
                 </tr>
