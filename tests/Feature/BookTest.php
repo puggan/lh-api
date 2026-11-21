@@ -48,6 +48,24 @@ class BookTest extends TestCase
         $this->assertStringContainsString('Test Person, lgh 466', $admin['message']);
     }
 
+    public function test_no_sms_when_an_admin_books(): void
+    {
+        $this->actingAsWpUser('editor');
+
+        $this->post('/api/calender/book', $this->form())->assertOk();
+
+        $this->assertEmpty(Communication::$sent);
+    }
+
+    public function test_sms_when_a_logged_in_non_admin_books(): void
+    {
+        $this->actingAsWpUser('subscriber');
+
+        $this->post('/api/calender/book', $this->form())->assertOk();
+
+        $this->assertCount(1, Communication::$sent);
+    }
+
     public function test_no_sms_while_a_recent_request_for_the_same_place_is_pending(): void
     {
         $first = $this->post('/api/calender/book', $this->form())->assertOk()->json('id');

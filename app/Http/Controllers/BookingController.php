@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\CleanupOldBookings;
+use App\Http\Middleware\RequireWpAdmin;
 use App\Models\Bookings;
 use App\Models\Periods;
 use App\Models\Terms;
@@ -98,6 +99,10 @@ class BookingController
         $booking->load('period.place');
 
         $place = $booking->period->place;
+        if (WpUser::loggedIn()?->hasCapability(RequireWpAdmin::CAPABILITY)) {
+            // An admin booking through the form already knows about the request.
+            return new JsonResponse($booking);
+        }
         if (self::hasRecentPendingRequest($booking)) {
             // Saved and shown on the admin page, but no SMS: the admin already has one to answer.
             return new JsonResponse($booking);
