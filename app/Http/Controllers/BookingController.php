@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\CleanupOldBookings;
 use App\Models\Bookings;
 use App\Models\WpUser;
+use App\Services\Communication;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -85,7 +86,11 @@ class BookingController
         $booking->status = 'rejected';
         $booking->save();
 
-        //todo:maila
+        Communication::informUser(
+            $booking,
+            'bokningsförfrågan avböjd',
+            "Tyvärr kan vi inte ta emot din bokning av lokalen {$booking->period->start_date}.",
+        );
 
         return new JsonResponse(['ok' => true]);
     }
