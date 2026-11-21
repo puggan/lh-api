@@ -20,6 +20,7 @@ class PeriodsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->actingAsWpUser();
         $this->place = DB::table('places')->insertGetId(['name' => 'Test', 'description' => '', 'street' => 'Gata 1', 'zipcode' => 12345, 'city' => 'Test']);
     }
 

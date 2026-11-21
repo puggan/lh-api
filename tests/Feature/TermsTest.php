@@ -14,6 +14,12 @@ class TermsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAsWpUser();
+    }
+
     public function test_new_terms_become_the_last_terms(): void
     {
         $response = $this->postJson('/api/terms', ['content' => 'Nya villkor'])

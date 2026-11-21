@@ -22,6 +22,7 @@ class ApproveBookingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->actingAsWpUser();
 
         $place = DB::table('places')->insertGetId(['name' => 'Test', 'description' => '', 'street' => 'Gata 1', 'zipcode' => 12345, 'city' => 'Test', 'deposit' => 500]);
         $this->terms = DB::table('terms')->insertGetId(['content' => 'test terms']);

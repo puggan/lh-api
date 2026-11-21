@@ -15,6 +15,12 @@ class PendingRequestsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->actingAsWpUser();
+    }
+
     public function test_pending_requests_tell_if_their_period_is_already_booked(): void
     {
         $place = DB::table('places')->insertGetId(['name' => 'Test', 'description' => '', 'street' => 'Gata 1', 'zipcode' => 12345, 'city' => 'Test']);
