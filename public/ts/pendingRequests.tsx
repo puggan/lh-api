@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.table(requests);
 
     const scriptContent = <div id="pendingRequest">
-        <h1>
+        <h2>
             Bokningsförfrågningar
-        </h1>
+        </h2>
     </div>;
 
     /**
@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         table.remove();
+        // e.g. upcomingBookings reloads on this
+        document.dispatchEvent(new CustomEvent('lh-bookings-changed'));
     };
 
     for (const request of requests) {
