@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: LH Bokningar
-Description: Admin page for the bookings of Lokalen: login check, pending requests and upcoming periods (scripts from lh-api).
-Version: 0.2.0
+Description: Admin page for the bookings of Lokalen: login check, pending requests, upcoming periods and adding periods (scripts from lh-api).
+Version: 0.3.0
 Author: "Puggan Sundragon" <puggan@sundragon.se>
 License: MIT
 */
@@ -44,6 +44,7 @@ const SECTIONS = [
     'whoAmI',           // does the API recognise the WordPress login?
     'pendingRequests',  // requests to approve or decline
     'upcomingBookings', // upcoming periods and their bookings
+    'addPeriods',       // add bookable periods, one or many
 ];
 
 function render_page(): void
