@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (const {periodId, button} of approveButtons) {
             if (bookedPeriods.has(periodId)) {
                 button.disabled = true;
-                button.title = 'Perioden är redan bokad, den här förfrågan kan bara nekas.';
+                button.title = 'Dagen/perioden är redan bokad, den här förfrågan kan bara nekas.';
             }
         }
     };
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 bookedPeriods.add(request.periods_id);
             }
             alert(response?.status === 409
-                ? 'Perioden är redan bokad av någon annan. Neka den här förfrågan i stället.'
+                ? 'Dagen/perioden är redan bokad av någon annan. Neka den här förfrågan i stället.'
                 : 'Någonting gick fel, försök igen.');
             buttons.forEach(b => b.disabled = false);
             disableApproveForBookedPeriods();

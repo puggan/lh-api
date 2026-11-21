@@ -49,7 +49,7 @@ class BookingController
                 'terms_id' => ['required', 'integer'],
             ],
             [
-                'periods_id' => 'Välj en period i kalendern.',
+                'periods_id' => 'Välj en dag/period i kalendern.',
                 'name' => 'Fyll i ditt namn.',
                 'phone' => 'Fyll i ett svenskt telefonnummer, t.ex. 070-123 45 67.',
                 'email' => 'Fyll i en giltig e-postadress.',
@@ -68,11 +68,11 @@ class BookingController
             /** @var ?Periods $period */
             $period = Periods::query()->find($input['periods_id']);
             if (!$period) {
-                $validator->errors()->add('periods_id', 'Perioden finns inte längre, ladda om sidan.');
+                $validator->errors()->add('periods_id', 'Dagen/perioden finns inte längre, ladda om sidan.');
             } elseif ($period->start_date <= now()->toDateString()) {
-                $validator->errors()->add('periods_id', 'Perioden har redan börjat och kan inte bokas.');
+                $validator->errors()->add('periods_id', 'Dagen/perioden har redan börjat och kan inte bokas.');
             } elseif ($period->bookings()->where('status', '=', 'booked')->exists()) {
-                $validator->errors()->add('periods_id', 'Perioden är redan bokad.');
+                $validator->errors()->add('periods_id', 'Dagen/perioden är redan bokad.');
             }
             if ((int)$input['terms_id'] !== (int)Terms::query()->max('id')) {
                 $validator->errors()->add('terms_id', 'Villkoren har ändrats, ladda om sidan och läs de nya villkoren.');

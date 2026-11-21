@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tsxScriptElement = document.querySelector<HTMLScriptElement>('script[data-tsx="upcomingBookings"]');
     const list = <div><p>Laddar…</p></div>;
     const scriptContent = <div id="upcomingBookings">
-        <h2>Kommande perioder</h2>
+        <h2>Kommande dagar/perioder</h2>
         {list}
     </div>;
 
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             periods = await (await fetch('/api/calender', {headers: {Accept: 'application/json'}})).json() as upcomingPeriod[];
         } catch {
-            list.replaceChildren(<p>Kunde inte hämta perioderna.</p>);
+            list.replaceChildren(<p>Kunde inte hämta dagarna/perioderna.</p>);
             return;
         }
 
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .sort((a, b) => a.start_date.localeCompare(b.start_date));
 
         if (!upcoming.length) {
-            list.replaceChildren(<p>Inga kommande perioder.</p>);
+            list.replaceChildren(<p>Inga kommande dagar/perioder.</p>);
             return;
         }
 

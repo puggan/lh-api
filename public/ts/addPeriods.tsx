@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             singleEnd.value = '';
         }
     }}>
-        <h3>En period</h3>
+        <h3>En dag/period</h3>
         <label><span>Från:</span>{singleStart}</label>
         <label><span>Till:</span>{singleEnd}<small>tom = samma dag</small></label>
         {singleButton}
@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             bulkDates.value = '';
         }
     }}>
-        <h3>Flera perioder</h3>
+        <h3>Flera dagar/perioder</h3>
         <label><span>Längd (dagar):</span>{bulkLength}</label>
         <label class="dates"><span>Startdatum, ett per rad:</span>{bulkDates}</label>
         {bulkButton}
     </form>;
 
     const scriptContent = <div id="addPeriods">
-        <h2>Lägg till perioder</h2>
+        <h2>Lägg till bokningsbara dagar/perioder</h2>
         <label><span>Lokal:</span>{placeSelect}</label>
         <div class="forms">
             {singleForm}
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             placeSelect.appendChild(<option value={place.id}>{place.name}</option>);
         }
         if (!places.length) {
-            results.replaceChildren(<li class="error">❌ Det finns inga lokaler att lägga perioder på.</li>);
+            results.replaceChildren(<li class="error">❌ Det finns inga lokaler att lägga dagar/perioder på.</li>);
         }
     } catch {
         results.replaceChildren(<li class="error">❌ Kunde inte hämta lokalerna.</li>);

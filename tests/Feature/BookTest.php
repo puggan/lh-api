@@ -111,18 +111,18 @@ class BookTest extends TestCase
 
     public function test_period_that_has_started_is_422(): void
     {
-        $this->assertPeriodRejected($this->period(now()->toDateString()), 'Perioden har redan börjat och kan inte bokas.');
+        $this->assertPeriodRejected($this->period(now()->toDateString()), 'Dagen/perioden har redan börjat och kan inte bokas.');
     }
 
     public function test_deleted_period_is_422(): void
     {
-        $this->assertPeriodRejected($this->period(now()->addDays(10)->toDateString(), deleted: true), 'Perioden finns inte längre, ladda om sidan.');
+        $this->assertPeriodRejected($this->period(now()->addDays(10)->toDateString(), deleted: true), 'Dagen/perioden finns inte längre, ladda om sidan.');
     }
 
     public function test_booked_period_is_422(): void
     {
         DB::table('bookings')->insert($this->form(['status' => 'booked', 'periods_id' => $this->period, 'phone' => 701234567, 'description' => 'x', 'purpose' => null]) + []);
-        $this->assertPeriodRejected($this->period, 'Perioden är redan bokad.');
+        $this->assertPeriodRejected($this->period, 'Dagen/perioden är redan bokad.');
     }
 
     public function test_old_terms_are_422(): void
