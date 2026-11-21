@@ -89,7 +89,7 @@ class BookingController
         Communication::informUser(
             $booking,
             'bokningsförfrågan avböjd',
-            "Tyvärr kan vi inte ta emot din bokning av lokalen {$booking->period->start_date}.",
+            "Tyvärr kan vi inte ta emot din bokning av {$booking->period->place->name} {$booking->period->start_date}.",
         );
 
         return new JsonResponse(['ok' => true]);
