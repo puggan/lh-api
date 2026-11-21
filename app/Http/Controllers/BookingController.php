@@ -141,11 +141,24 @@ class BookingController
         return null;
     }
 
+    /**
+     * Pending booking requests, each with "period_booked": true if another booking for the same
+     * period is already booked (then the request can only be declined).
+     */
     public static function pending(): JsonResponse
     {
         $pending = Bookings::query()->with('period')->where('status', '=', 'pending')->get();
+        $bookedPeriodIds = Bookings::query()
+            ->where('status', '=', 'booked')
+            ->whereIn('periods_id', $pending->pluck('periods_id')->unique())
+            ->pluck('periods_id')
+            ->all();
+        foreach ($pending as $booking) {
+            $booking->setAttribute('period_booked', in_array($booking->periods_id, $bookedPeriodIds, true));
+        }
         return new JsonResponse($pending);
     }
+
     /**
      * Runs the same cleanup as the scheduled `bookings:cleanup` command,
      * in case the scheduler is not running. ?dry_run=1 only counts.
