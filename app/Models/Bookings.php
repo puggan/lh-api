@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
  * @property int $terms_id BIGINT UNSIGNED NOT NULL,
  * @property int $periods_id BIGINT UNSIGNED NOT NULL,
  * @property string $status ENUM ('pending', 'booked', 'unbooked', 'rejected', 'deleted') NOT NULL,
+ * @property-read ?int $booked_periods_id BIGINT UNSIGNED AS (IF(status = 'booked', periods_id, NULL)) STORED, UNIQUE
  * @property string $description TEXT NOT NULL,
  * @property string $name VARCHAR(255) NOT NULL,
  * @property int $phone BIGINT NOT NULL,
@@ -38,6 +39,9 @@ class Bookings extends Model
         'deposit_paid_at' => 'immutable_datetime',
         'deposit_returned_at' => 'immutable_datetime',
     ];
+
+    /** Generated column, only there to enforce one 'booked' booking per period. */
+    protected $hidden = ['booked_periods_id'];
 
     public function period(): BelongsTo
     {
