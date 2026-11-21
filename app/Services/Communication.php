@@ -63,7 +63,7 @@ class Communication
 
         try {
             $response = Http::withToken($token)->asForm()->timeout(10)->post(self::API_URL, $parameters);
-            // Errors come as {"error": 13, "message": "..."}; the HTTP status is not documented, so check both.
+            // Errors come as {"error": 98, "message": "..."} with HTTP 200 (seen on ns1), so check the body, not only the status.
             $error = $response->json('error') !== null
                 ? "error {$response->json('error')}: {$response->json('message')}"
                 : ($response->successful() ? null : "HTTP {$response->status()}");
