@@ -43,6 +43,17 @@ class Communication
         if ($replyTo) {
             $headers['Reply-To'] = $replyTo;
         }
-        mail($to, mb_encode_mimeheader($subject, 'UTF-8'), $message, $headers);
+        // A message that can't be sent must not break the booking, approval or decline that caused it:
+        // the change is already saved. Laravel turns mail()'s warnings (e.g. no sendmail) into exceptions.
+        try {
+            $sent = mail($to, mb_encode_mimeheader($subject, 'UTF-8'), $message, $headers);
+            $error = $sent ? null : 'mail() returned false';
+        } catch (\Throwable $exception) {
+            $error = $exception->getMessage();
+        }
+        if ($error !== null) {
+            // error_log(), not Laravel's log: it reaches the web server's error log even if storage/ isn't writable.
+            error_log("Communication: could not send \"{$subject}\" to {$to}: {$error}");
+        }
     }
 }
