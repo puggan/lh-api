@@ -30,4 +30,5 @@ Route::post('/terms', TermsController::create(...));
 Route::get('/request/pending', BookingController::pending(...));
 Route::post('/request/approve', BookingController::approve(...));
 Route::post('/request/decline', BookingController::declined(...));
+Route::post('/request/spam', BookingController::spam(...));
 Route::post('/request/cleanup', BookingController::cleanup(...));

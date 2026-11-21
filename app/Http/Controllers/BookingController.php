@@ -200,13 +200,10 @@ class BookingController
         return new JsonResponse(['ok' => true]);
     }
 
+    /** Declines the request and texts the booker. */
     public static function declined(Request $request): JsonResponse
     {
-        // Through the model, not a query builder update, so the change is logged.
-        /** @var Bookings $booking */
-        $booking = Bookings::query()->findOrFail($request->input('bookings_id'));
-        $booking->status = 'rejected';
-        $booking->save();
+        $booking = self::reject($request);
 
         Communication::informUser(
             $booking,
@@ -214,5 +211,24 @@ class BookingController
         );
 
         return new JsonResponse(['ok' => true]);
+    }
+
+    /** Declines a spam request without texting the "booker" (the number may not be theirs). */
+    public static function spam(Request $request): JsonResponse
+    {
+        self::reject($request);
+
+        return new JsonResponse(['ok' => true]);
+    }
+
+    private static function reject(Request $request): Bookings
+    {
+        // Through the model, not a query builder update, so the change is logged.
+        /** @var Bookings $booking */
+        $booking = Bookings::query()->findOrFail($request->input('bookings_id'));
+        $booking->status = 'rejected';
+        $booking->save();
+
+        return $booking;
     }
 }
