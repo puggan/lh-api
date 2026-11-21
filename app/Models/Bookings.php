@@ -36,7 +36,8 @@ class Bookings extends Model
 
     public function period(): BelongsTo
     {
-        return $this->belongsTo(Periods::class, 'periods_id');
+        // A booking keeps its period even if the period has been soft deleted.
+        return $this->belongsTo(Periods::class, 'periods_id')->withTrashed();
     }
 
 
